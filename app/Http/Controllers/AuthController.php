@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
-use App\Http\Resources\UserResource;
+//use App\Http\Resources\UserResource;
 use App\Models\Creative;
 use App\Models\RegularUser;
 use App\Models\User;
