@@ -41,5 +41,12 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 500);
         });
 
+        $exceptions->render(function (Throwable $throwable) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred. Please try again.'
+            ], 500);
+        });
+
         //
     })->create();
