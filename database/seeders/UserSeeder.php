@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Creative;
+use App\Models\RegularUser;
+use App\Models\SuperAdmin;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -21,7 +24,7 @@ class UserSeeder extends Seeder
             'username' => 'jimmyjetter',
             'email' => 'jimmyjetter27@gmail.com',
             'email_verified_at' => now(),
-            'type' => 'App\\Models\\SuperAdmin',
+            'type' => SuperAdmin::class,
             'password' => Hash::make('password'),
             'remember_token' => Str::random(10),
         ]);
@@ -32,7 +35,7 @@ class UserSeeder extends Seeder
             'username' => 'jumpingjacks',
             'email' => 'amevchris@gmail.com',
             'email_verified_at' => now(),
-            'type' => 'App\\Models\\SuperAdmin',
+            'type' => SuperAdmin::class,
             'password' => Hash::make('password'),
             'remember_token' => Str::random(10),
         ]);
@@ -43,7 +46,7 @@ class UserSeeder extends Seeder
             'username' => 'Lone Wolf',
             'email' => 'jacquelyn79@example.com',
             'email_verified_at' => now(),
-            'type' => 'App\\Models\\Creative',
+            'type' => Creative::class,
             'password' => Hash::make('password'),
             'remember_token' => Str::random(10),
         ]);
@@ -54,7 +57,7 @@ class UserSeeder extends Seeder
             'username' => 'awoken monkey',
             'email' => 'walton38@example.net',
             'email_verified_at' => now(),
-            'type' => 'App\\Models\\RegularUser',
+            'type' => RegularUser::class,
             'password' => Hash::make('password'),
             'remember_token' => Str::random(10),
         ]);
