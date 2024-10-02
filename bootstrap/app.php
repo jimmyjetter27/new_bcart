@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -33,18 +34,28 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 422);
         });
 
-        // Catch all other exceptions here
-        $exceptions->render(function (Exception $exception) {
+        $exceptions->render(function (AuthenticationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred. Please try again.'
+                'message' => 'Unauthenticated'
+            ]);
+        });
+        // Catch all other exceptions here
+        $exceptions->render(function (Exception $exception) {
+            \Illuminate\Support\Facades\Log::debug('Exception: '. $exception->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred. Please try again.',
+//                'error' => $exception->getMessage()
             ], 500);
         });
 
         $exceptions->render(function (Throwable $throwable) {
+            \Illuminate\Support\Facades\Log::debug('Exception: '. $throwable->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred. Please try again.'
+                'message' => 'An error occurred. Please try again.',
+//                'error' => $throwable->getMessage()
             ], 500);
         });
 

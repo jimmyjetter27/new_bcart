@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Creative;
 use App\Models\RegularUser;
@@ -48,6 +49,7 @@ class AuthController extends Controller
             $token = $user->createToken('auth-token')->plainTextToken;
             return response()->json([
                 'success' => true,
+                'message' => 'Login successful',
                 'token' => $token,
                 'data' => new UserResource($user),
             ], 200);
@@ -57,6 +59,56 @@ class AuthController extends Controller
                 'message' => 'Incorrect credentials entered.'
             ], 401);
         }
+    }
+
+    public function userProfile()
+    {
+        $user = Auth::user();
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile found',
+            'data' => new UserResource($user)
+        ]);
+    }
+
+    public function updateProfile(UpdateProfileRequest $request)
+    {
+        $user = Auth::user();
+        $user->update($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated',
+            'data' => new UserResource($user)
+        ]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required'
+        ]);
+
+        $current_password = $request->input('current_password');
+        $new_password = $request->input('new_password');
+
+        $user = Auth::user();
+
+        if (!Hash::check($current_password, $user->password)) {
+            return response([
+                'success' => false,
+                'message' => 'Incorrect password entered'
+            ], 400);
+        }
+
+        $user->update([
+            'password' => Hash::make($new_password)
+        ]);
+        return response([
+            'success' => true,
+            'message' => 'Password updated.'
+        ], 202);
     }
 
     public function forgotPassword(Request $request)
@@ -81,12 +133,13 @@ class AuthController extends Controller
         }
     }
 
-    public function resetPassword(Request $request)
+    public
+    function resetPassword(Request $request)
     {
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
+            'password' => 'required|min:8',
         ]);
 
         $status = Password::reset(
@@ -104,9 +157,13 @@ class AuthController extends Controller
 
         // Return success or failure as a JSON response
         if ($status === Password::PASSWORD_RESET) {
+            $user = User::where('email', $request->input('email'))->first();
+            $token = $user->createToken('auth-token')->plainTextToken;
             return response()->json([
                 'success' => true,
                 'message' => 'Password reset successfully.',
+                'token' => $token,
+                'data' => new UserResource($user)
             ], 200);
         } else {
             return response()->json([

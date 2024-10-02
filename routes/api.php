@@ -20,8 +20,13 @@ Route::group(['middleware' => [ForceJson::class]], function () {
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
-
+    Route::group(['middleware' => ['auth:sanctum']], function () {
+        Route::get('user-profile', [AuthController::class, 'userProfile']);
+        Route::put('update-profile', [AuthController::class, 'updateProfile']);
+        Route::put('update-password', [AuthController::class, 'updatePassword']);
+    });
 });
+
 
 Route::get('clear-database', [\App\Http\Controllers\MigrationController::class, 'clearDatabase']);
 Route::get('active', function () {
