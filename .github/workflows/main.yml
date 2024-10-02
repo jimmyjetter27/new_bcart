@@ -15,7 +15,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-#          composer update
+          # composer update
           composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Sync files
