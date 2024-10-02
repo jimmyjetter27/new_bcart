@@ -17,17 +17,25 @@ Route::group(['middleware' => [ForceJson::class]], function () {
     Route::get('auth/google', [GoogleController::class, 'redirectToGoogle']);
     Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('reset-password', [AuthController::class, 'resetPassword']);
+
 
 });
 
+Route::get('clear-database', [\App\Http\Controllers\MigrationController::class, 'clearDatabase']);
 Route::get('active', function () {
-    return fake()->password(8);
+    return response()->json([
+        'success' => true,
+        'token' => '14|Aw8HbqJUIaFVFuYU0A2Xz3OqLRvWo5yu0Az64CJj9cd0130d',
+        'data' => new \App\Http\Resources\UserResource(\App\Models\User::first())
+    ]);
 });
 
 Route::fallback(function () {
-   return response()->json([
-       'success' => false,
-       'message' => 'Page not found'
-   ], 404);
+    return response()->json([
+        'success' => false,
+        'message' => 'Page not found'
+    ], 404);
 });
 

@@ -31,6 +31,7 @@ class GoogleController extends Controller
 
                 return response()->json([
                     'success' => true,
+                    'message' => 'Sign in successful',
                     'token' => $token,
                     'data' => new UserResource($finduser),
                 ]);
