@@ -1,0 +1,25 @@
+name: Deploy Laravel App to cPanel
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  web-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ftp.jidi.digital
+          username: ${{ secrets.ftp_username }}
+          password: ${{ secrets.ftp_password }}
