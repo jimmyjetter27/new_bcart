@@ -21,7 +21,7 @@ Route::group(['middleware' => [ForceJson::class]], function () {
 });
 
 Route::get('active', function () {
-    return 'active';
+    return fake()->password(8);
 });
 
 Route::fallback(function () {
