@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('price')->nullable();
             $table->string('image_path')->nullable();
-            $table->boolean('approved')->default(false);
+            $table->boolean('is_approved')->default(false);
             $table->timestamps();
         });
     }

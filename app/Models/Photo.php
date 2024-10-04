@@ -15,7 +15,7 @@ class Photo extends Model
         'image_path',
         'description',
         'price',
-        'approved',
+        'is_approved',
         'photo_category_id'
     ];
 

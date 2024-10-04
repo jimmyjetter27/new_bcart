@@ -16,19 +16,21 @@ return new class extends Migration
             $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
             $table->string('username')->unique()->nullable();
-            $table->string('email')->unique();
+            $table->string('email', '255')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->text('description')->nullable();
-            $table->string('location')->nullable();
-            $table->string('region')->nullable();
-            $table->string('type')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->string('ghana_post_gps')->nullable();
+            $table->string('city')->nullable();
+            $table->text('physical_address')->nullable();
             $table->string('password')->nullable();
-            $table->rememberToken();
-            $table->foreignId('current_team_id')->nullable();
-            $table->string('profile_name')->nullable();
+            $table->boolean('creative_hire_status')->nullable();
+            $table->string('creative_status')->nullable();
+            $table->string('profile_picture')->nullable();
 //            $table->string('profile_photo_path', 2048)->nullable();
             $table->unsignedBigInteger('hiring_id')->nullable();
+            $table->text('description')->nullable(); // for creatives
             $table->string('google_id')->nullable()->unique();
+            $table->string('type')->nullable();
             $table->timestamps();
         });
 
@@ -46,6 +48,5 @@ return new class extends Migration
     {
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('sessions');
     }
 };

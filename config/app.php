@@ -26,6 +26,8 @@ return [
     |
     */
 
+    'use_cloudinary' => env('USE_CLOUDINARY', true),
+
     'env' => env('APP_ENV', 'production'),
 
     /*

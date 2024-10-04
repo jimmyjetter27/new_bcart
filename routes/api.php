@@ -23,17 +23,19 @@ Route::group(['middleware' => [ForceJson::class]], function () {
     Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('user-profile', [AuthController::class, 'userProfile']);
         Route::put('update-profile', [AuthController::class, 'updateProfile']);
+        Route::put('update-creative-details', [AuthController::class, 'updateCreativeDetails']);
         Route::put('update-password', [AuthController::class, 'updatePassword']);
     });
 });
 
 
 Route::get('clear-database', [\App\Http\Controllers\MigrationController::class, 'clearDatabase']);
+Route::post('test-image-upload', [\App\Http\Controllers\TestController::class, 'uploadImage']);
 Route::get('active', function () {
     return response()->json([
         'success' => true,
         'token' => '14|Aw8HbqJUIaFVFuYU0A2Xz3OqLRvWo5yu0Az64CJj9cd0130d',
-        'data' => new \App\Http\Resources\UserResource(\App\Models\User::first())
+        'data' => new \App\Http\Resources\UserResource(\App\Models\User::latest()->first())
     ]);
 });
 

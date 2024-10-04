@@ -21,16 +21,21 @@ class User extends Authenticatable
     protected $fillable = [
         'first_name',
         'last_name',
+        'username',
         'email',
         'email_verified_at',
-        'username',
+        'phone_number',
+        'ghana_post_gps',
+        'city',
+        'physical_address',
         'password',
-        'location',
+        'creative_hire_status',
+        'creative_status',
+        'profile_picture ',
+        'hiring_id',
         'description',
-        'region',
-        'type',
         'google_id',
-        'profile_name',
+        'type',
     ];
 
     /**
@@ -55,6 +60,28 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function pricing()
+    {
+        return $this->hasOne(Pricing::class, 'creative_id');
+    }
+
+    public function hiring()
+    {
+        return $this->hasOne(Hiring::class,
+            'creative_id',
+            'id',
+        );
+    }
+    public function paymentInfo()
+    {
+        return $this->hasOne(PaymentInformation::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'customer_id', 'id');
     }
 
     public function photos()

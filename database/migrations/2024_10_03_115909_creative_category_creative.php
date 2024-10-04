@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('photo_categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('photo_category_picture')->nullable();
-            $table->string('photo_category')->unique();
-            $table->timestamps();
+        Schema::create('creative_category_creative', function (Blueprint $table) {
+            $table->unsignedBigInteger('creative_id');
+            $table->unsignedBigInteger('creative_category_id');
         });
     }
 
@@ -24,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('photo_categories');
+        Schema::table('creative_category_creative', function (Blueprint $table) {
+            //
+        });
     }
 };
