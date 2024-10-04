@@ -12,7 +12,7 @@ class MigrationController extends Controller
     {
         try {
             // Run the `php artisan migrate:fresh` command
-            Artisan::call('migrate:fresh');
+            Artisan::call('migrate:fresh --seed');
 
             // Get the output of the Artisan command
             $output = Artisan::output();

@@ -26,6 +26,7 @@ class Pricing extends Model
 
     public function creative()
     {
-        return $this->belongsTo(Creative::class);
+        return $this->belongsTo(User::class, 'creative_id');
     }
+
 }

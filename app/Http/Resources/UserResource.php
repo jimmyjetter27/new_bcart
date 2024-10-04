@@ -33,6 +33,7 @@ class UserResource extends JsonResource
             'updated_at' => $this->updated_at,
             'pricing' => new PricingResource($this->whenLoaded('pricing')),
             'payment_information' => new PaymentInformationResource($this->whenLoaded('paymentInfo')),
+            'creative_categories' => CreativeCategoryResource::collection($this->whenLoaded('creative_categories')),
             'hiring_info' => new HiringResource($this->whenLoaded('hiring')),
             'photos' => PhotoResource::collection($this->whenLoaded('photos'))
         ];

@@ -100,23 +100,30 @@ class AuthController extends Controller
             $creative->physical_address = $request->input('physical_address');
             $creative->description = $request->input('description');
             $creative->creative_hire_status = $request->input('creative_hire_status');
+            $creative->creative_status = $creative->creative_hire_status === true ? 'Pending Verification' : $creative->creative_status;
+            $creative->type = 'App\Models\Creative';
+            $creative->save();
 
 
-            // Step 3: Create the Pricing Details
+            // Step 3: Create or Update the Pricing Details
             if ($request->has('pricing')) {
-                Pricing::create([
-                    'creative_id' => $creative->id,
-                    'hourly_rate' => $request->input('pricing.hourly_rate'),
-                    'daily_rate' => $request->input('pricing.daily_rate'),
-                    'minimum_charge' => $request->input('pricing.minimum_charge'),
-                    'one_day_traditional' => $request->input('pricing.one_day_traditional'),
-                    'one_day_white' => $request->input('pricing.one_day_white'),
-                    'one_day_white_traditional' => $request->input('pricing.one_day_white_traditional'),
-                    'two_days_white_traditional' => $request->input('pricing.two_days_white_traditional'),
-                    'three_days_thanksgiving' => $request->input('pricing.three_days_thanksgiving'),
-                    'other_charges' => $request->input('pricing.other_charges'),
-                ]);
+                // Check if the pricing already exists, and update or create a new one
+                $pricing = Pricing::updateOrCreate(
+                    ['creative_id' => $creative->id],
+                    [
+                        'hourly_rate' => $request->input('pricing.hourly_rate'),
+                        'daily_rate' => $request->input('pricing.daily_rate'),
+                        'minimum_charge' => $request->input('pricing.minimum_charge'),
+                        'one_day_traditional' => $request->input('pricing.one_day_traditional'),
+                        'one_day_white' => $request->input('pricing.one_day_white'),
+                        'one_day_white_traditional' => $request->input('pricing.one_day_white_traditional'),
+                        'two_days_white_traditional' => $request->input('pricing.two_days_white_traditional'),
+                        'three_days_thanksgiving' => $request->input('pricing.three_days_thanksgiving'),
+                        'other_charges' => $request->input('pricing.other_charges'),
+                    ]
+                );
             }
+
 
             // Step 4: Store Payment Information
             if ($request->has('payment_details')) {
@@ -133,10 +140,12 @@ class AuthController extends Controller
             }
 
             if ($request->has('creative_categories')) {
-                $creative->categories()->sync($request->creative_categories);
+                $creative->creative_categories()->sync($request->creative_categories);
             }
 
             DB::commit();
+
+            $creative->load('pricing', 'paymentInfo', 'hiring', 'creative_categories');
 
             return response()->json([
                 'success' => true,

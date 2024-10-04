@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('pricings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('creative_id')->constrained();
+            $table->foreignId('creative_id')->constrained('users')->onDelete('cascade');
             $table->decimal('hourly_rate', 8, 2)->nullable();
             $table->decimal('daily_rate', 8, 2)->nullable();
             $table->decimal('minimum_charge', 8, 2)->nullable();
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->decimal('two_days_white_traditional', 8, 2)->nullable();
             $table->decimal('three_days_thanksgiving', 8, 2)->nullable();
 //            $table->decimal('other_charges', 8, 2)->nullable();
-            $table->string('other_charges', 8, 2)->nullable();
+            $table->text('other_charges')->nullable();
 
             $table->timestamps();
         });

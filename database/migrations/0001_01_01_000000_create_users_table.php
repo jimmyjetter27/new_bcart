@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('city')->nullable();
             $table->text('physical_address')->nullable();
             $table->string('password')->nullable();
-            $table->boolean('creative_hire_status')->nullable();
+            $table->boolean('creative_hire_status')->default(false);
             $table->string('creative_status')->nullable();
             $table->string('profile_picture')->nullable();
 //            $table->string('profile_photo_path', 2048)->nullable();
@@ -31,6 +31,7 @@ return new class extends Migration
             $table->text('description')->nullable(); // for creatives
             $table->string('google_id')->nullable()->unique();
             $table->string('type')->nullable();
+            $table->rememberToken();
             $table->timestamps();
         });
 

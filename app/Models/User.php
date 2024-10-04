@@ -59,6 +59,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'creative_hire_status' => 'boolean',
         ];
     }
 
@@ -66,6 +67,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(Pricing::class, 'creative_id');
     }
+
 
     public function hiring()
     {
@@ -87,5 +89,14 @@ class User extends Authenticatable
     public function photos()
     {
         return $this->hasMany(Photo::class);
+    }
+
+    public function creative_categories()
+    {
+        return $this->belongsToMany(CreativeCategory::class,
+            'creative_category_creative',
+            'creative_id',
+            'creative_category_id'
+        );
     }
 }
