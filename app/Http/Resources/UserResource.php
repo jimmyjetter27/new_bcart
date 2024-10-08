@@ -27,7 +27,7 @@ class UserResource extends JsonResource
             'physical_address' => $this->physical_address,
             'creative_hire_status' => $this->creative_hire_status,
             'creative_status' => $this->creative_status,
-            'profile_picture' => $this->profile_picture,
+            'profile_picture' => $this->profile_picture_url,
             'description' => $this->description,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

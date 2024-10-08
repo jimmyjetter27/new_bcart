@@ -3,13 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Parental\HasChildren;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, HasChildren, HasApiTokens;
 
@@ -31,7 +32,8 @@ class User extends Authenticatable
         'password',
         'creative_hire_status',
         'creative_status',
-        'profile_picture ',
+        'profile_picture_public_id ',
+        'profile_picture_url ',
         'hiring_id',
         'description',
         'google_id',
@@ -63,6 +65,34 @@ class User extends Authenticatable
         ];
     }
 
+    public function isAdmin(): bool
+    {
+        return $this->type === Admin::class;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->type === SuperAdmin::class;
+    }
+
+    public function isCreative(): bool
+    {
+        return $this->type === Creative::class;
+    }
+
+    public function isRegularUser(): bool
+    {
+        return $this->type === RegularUser::class;
+    }
+
+
+
+//    public function sendEmailVerificationNotification()
+//    {
+//        $this->notify(new VerifyEmailNotification());
+//    }
+
+
     public function pricing()
     {
         return $this->hasOne(Pricing::class, 'creative_id');
@@ -76,6 +106,7 @@ class User extends Authenticatable
             'id',
         );
     }
+
     public function paymentInfo()
     {
         return $this->hasOne(PaymentInformation::class);

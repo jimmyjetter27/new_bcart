@@ -25,7 +25,8 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->boolean('creative_hire_status')->default(false);
             $table->string('creative_status')->nullable();
-            $table->string('profile_picture')->nullable();
+            $table->string('profile_picture_public_id')->nullable();
+            $table->string('profile_picture_url')->nullable();
 //            $table->string('profile_photo_path', 2048)->nullable();
             $table->unsignedBigInteger('hiring_id')->nullable();
             $table->text('description')->nullable(); // for creatives
@@ -39,6 +40,15 @@ return new class extends Migration
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
+        });
+
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
         });
     }
 

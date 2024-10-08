@@ -20,13 +20,26 @@ Route::group(['middleware' => [ForceJson::class]], function () {
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
-    Route::group(['middleware' => ['auth:sanctum']], function () {
+
+    Route::get('/email/verification-notification', [AuthController::class, 'resendVerificationEmail'])
+        ->middleware(['auth:sanctum', 'throttle:6,1'])
+        ->name('verification.send');
+
+
+    Route::group(['middleware' => ['auth:sanctum', 'verified']], function () {
         Route::get('user-profile', [AuthController::class, 'userProfile']);
         Route::put('update-profile', [AuthController::class, 'updateProfile']);
         Route::put('update-creative-details', [AuthController::class, 'updateCreativeDetails']);
         Route::put('update-password', [AuthController::class, 'updatePassword']);
     });
+
 });
+
+Route::apiResources([
+    'creative-categories' => \App\Http\Controllers\CreativeCategoryController::class,
+    'photo-categories' => \App\Http\Controllers\PhotoCategoryController::class,
+    'photos' => \App\Http\Controllers\PhotoController::class
+]);
 
 
 Route::get('clear-database', [\App\Http\Controllers\MigrationController::class, 'clearDatabase']);
@@ -42,7 +55,7 @@ Route::get('active', function () {
 Route::fallback(function () {
     return response()->json([
         'success' => false,
-        'message' => 'Page not found'
+        'message' => 'Route not found'
     ], 404);
 });
 

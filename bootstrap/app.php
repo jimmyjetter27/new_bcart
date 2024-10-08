@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -40,9 +41,24 @@ return Application::configure(basePath: dirname(__DIR__))
                 'message' => 'Unauthenticated'
             ]);
         });
+
+        $exceptions->render(function (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        });
+
+        $exceptions->render(function (NotFoundHttpException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Resource not found.'
+            ]);
+        });
+
         // Catch all other exceptions here
         $exceptions->render(function (Exception $exception) {
-            \Illuminate\Support\Facades\Log::debug('Exception: '. $exception->getMessage());
+            \Illuminate\Support\Facades\Log::debug('Exception: '. $exception);
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred. Please try again.',
@@ -51,7 +67,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (Throwable $throwable) {
-            \Illuminate\Support\Facades\Log::debug('Exception: '. $throwable->getMessage());
+            \Illuminate\Support\Facades\Log::debug('Exception: '. $throwable);
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred. Please try again.',

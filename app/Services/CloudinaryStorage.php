@@ -3,7 +3,8 @@
 namespace App\Services;
 
 use App\Contracts\ImageStorageInterface;
-use JD\Cloudder\Facades\Cloudder;
+use Cloudinary\Cloudinary;
+use Illuminate\Support\Str;
 
 
 class CloudinaryStorage implements ImageStorageInterface
@@ -12,15 +13,40 @@ class CloudinaryStorage implements ImageStorageInterface
 
     public function __construct()
     {
-        // Initialize Cloudinary
-        $this->cloudinary = new Cloudinary();
+        $this->cloudinary = new Cloudinary([
+            'cloud' => [
+                'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                'api_key'    => env('CLOUDINARY_API_KEY'),
+                'api_secret' => env('CLOUDINARY_API_SECRET'),
+            ],
+        ]);
     }
-    public function upload($imagePath, $folder): array
+    public function upload($imageFile, $folder): array
     {
-        $response = Cloudder::upload($imagePath, null, [
-            'folder' => $folder
+        // Generate a unique temporary file name
+        $tempFilePath = tempnam(sys_get_temp_dir(), 'upload_');
+        $extension = $imageFile->getClientOriginalExtension();
+        $tempFileWithExtension = $tempFilePath . '.' . $extension;
+
+        // Move the uploaded file to the temporary file with the correct extension
+        $imageFile->move(dirname($tempFilePath), basename($tempFileWithExtension));
+
+        // Replace backslashes with forward slashes (Windows compatibility)
+        $tempFileWithExtension = str_replace('\\', '/', $tempFileWithExtension);
+
+        // Upload the file to Cloudinary
+        $response = $this->cloudinary->uploadApi()->upload($tempFileWithExtension, [
+            'folder' => $folder,
         ]);
 
-        return $response->getResult();
+        // Delete the temporary file
+        unlink($tempFileWithExtension);
+
+//        return $response->getArrayCopy();
+        return [
+            'public_id' => Str::after($response['public_id'], $folder.'/'),
+            'secure_url' => $response['secure_url'],
+        ];
     }
+
 }

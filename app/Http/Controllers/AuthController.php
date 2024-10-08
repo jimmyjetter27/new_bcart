@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CreativeHiringSettingRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Requests\VerifyEmailRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Creative;
 use App\Models\Hiring;
@@ -14,11 +15,17 @@ use App\Models\Pricing;
 use App\Models\RegularUser;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Events\Verified;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -30,6 +37,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->input('password'))
         ]);
 
+//        event(new Registered($user)); // Trigger email verification
         $token = $user->createToken('auth-token')->plainTextToken;
         return response()->json([
             'success' => true,
@@ -248,5 +256,46 @@ class AuthController extends Controller
                 'message' => __($status),
             ], 400); // 400 for bad request
         }
+    }
+
+    public function verifyEmail(Request $request, $id, $hash)
+    {
+        $user = User::findOrFail($id);
+
+        // Verify the hash matches the user's email
+        if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+            return response()->json(['success' => false, 'message' => 'Invalid or expired verification link.'], 400);
+        }
+
+        // Check if the email is already verified
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['success' => false, 'message' => 'Email already verified.'], 400);
+        }
+
+        // Mark the email as verified
+        $user->markEmailAsVerified();
+
+        // Optionally, you can fire the Verified event
+        event(new Verified($user));
+
+        return response()->json(['success' => true, 'message' => 'Email verified successfully.']);
+    }
+
+
+    public function resendVerificationEmail(Request $request)
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email already verified'
+            ], 200);
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Verification email resent'
+        ], 200);
     }
 }

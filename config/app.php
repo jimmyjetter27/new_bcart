@@ -15,6 +15,9 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'frontend_url' => env('FRONTEND_URL', env('APP_URL')),
+
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
@@ -26,7 +29,6 @@ return [
     |
     */
 
-    'use_cloudinary' => env('USE_CLOUDINARY', true),
 
     'env' => env('APP_ENV', 'production'),
 

@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class CreativeCategory extends Model
-{
+{
+
     use HasFactory;
+
+    protected $fillable = ['creative_category'];
 }

@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('photos', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('name');
+            $table->string('title');
             $table->string('slug')->nullable();
             $table->text('description')->nullable();
-            $table->string('price')->nullable();
-            $table->string('image_path')->nullable();
+            $table->decimal('price')->nullable();
+            $table->string('image_url')->nullable();
+            $table->string('image_public_id')->nullable();
             $table->boolean('is_approved')->default(false);
             $table->timestamps();
         });

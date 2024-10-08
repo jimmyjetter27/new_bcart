@@ -10,11 +10,14 @@ class Photo extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'user_id',
         'slug',
-        'image_path',
+        'title',
         'description',
         'price',
+//        'image_path',
+        'image_url',
+        'image_public_id',
         'is_approved',
         'photo_category_id'
     ];
@@ -33,19 +36,26 @@ class Photo extends Model
     {
         return $this->belongsToMany(
             PhotoCategory::class,
-            'photo_category_photo',
-            'photo_id',
-            'photo_category_id'
+            'photo_category_photo',  // Pivot table
+            'photo_id',  // Foreign key on the pivot table
+            'photo_category_id'  // Related key on the pivot table
         );
     }
 
-    public function photo_tags()
+
+    public function tags()
     {
-        return $this->belongsTo(
-            PhotoCategory::class,
-            'photo_category_id',
-            'id'
-        );
+        return $this->belongsToMany(PhotoTag::class, 'photo_tag', 'photo_id', 'photo_tag_id');
     }
+
+
+//    public function photo_tags()
+//    {
+//        return $this->belongsTo(
+//            PhotoCategory::class,
+//            'photo_category_id',
+//            'id'
+//        );
+//    }
 
 }

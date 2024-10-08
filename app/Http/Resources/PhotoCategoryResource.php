@@ -15,8 +15,8 @@ class PhotoCategoryResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'photo_category_picture' => $this->photo_category_picture,
-            'photo_category' => $this->photo_category
+            'id' => $this->id,
+            'photo_category' => $this->photo_category,
         ];
     }
 }
