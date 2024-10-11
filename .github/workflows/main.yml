@@ -1,21 +1,84 @@
-name: Deploy Laravel App to cPanel
+name: Deploy Laravel App
 
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
-  web-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Sync files
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        uses: actions/checkout@v2
         with:
-          server: tor101.hawkhost.com
-          username: ${{ secrets.ftp_username }}
-          password: ${{ secrets.ftp_password }}
+          fetch-depth: 1
+          path: aplanke_backend
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, pdo, pdo_mysql, sodium
+
+      - name: Install Composer dependencies
+        run: |
+          cd aplanke_backend
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      - name: Install NPM dependencies and build
+        run: |
+          cd aplanke_backend
+          npm install
+          npm run build
+
+      - name: Deploy to Hostinger via SSH
+        uses: appleboy/ssh-action@v0.1.3
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          port: 65002
+          script: |
+            cd /home/u765649575/domains/aplanke.com/aplanke_backend
+            # Set NVM path to ensure Node and NPM are available
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            export PATH="$NVM_DIR/versions/node/v20.18.0/bin:$PATH"
+            which npm
+            node -v
+            npm -v
+            # Pull the latest code
+            git pull origin main
+            # Remove the build folder from both public and public_html to avoid conflicts
+            rm -rf public/build
+            rm -rf /home/u765649575/domains/aplanke.com/public_html/build
+            # Remove index.php from the public directory so it doesn't overwrite the one in public_html
+            rm -f public/index.php
+            # Use the local Composer version
+            curl -sS https://getcomposer.org/installer | php
+            php composer.phar install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-req=ext-sodium
+            npm install
+            npm run build
+            if [ -d "public/build" ]; then
+                echo "Build folder exists in aplanke_backend/public. Proceeding to copy..."
+                # Copy the new build folder to public_html
+                cp -R public/build /home/u765649575/domains/aplanke.com/public_html/
+            else
+                echo "Build folder not found in aplanke_backend/public"
+            fi
+            # Verify the copied build folder in public_html
+            if [ -d "/home/u765649575/domains/aplanke.com/public_html/build" ]; then
+                echo "Build folder successfully copied to public_html"
+            else
+                echo "Build folder failed to copy to public_html"
+            fi
+
