@@ -1,4 +1,4 @@
-name: Deploy Laravel App to cPanel
+name: Deploy Laravel App to cPanel for bCart
 
 on:
   push:
