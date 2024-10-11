@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,16 +24,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-//        ResetPassword::createUrlUsing(function (object $notifiable, string $token) {
-//            return config('app.frontend_url')."/password-reset/$token?email={$notifiable->getEmailForPasswordReset()}";
-//        });
-
         Schema::defaultStringLength(191);
 
-        ResetPassword::createUrlUsing(function (User $user, string $token) {
-//            return 'https://example.com/reset-password?token='.$token;
-//            return env('RESET_PASSWORD_LINK').'?token='.$token; //TODO Get link
-            return env('RESET_PASSWORD_LINK').'?token='.$token;
+
+        VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
+            // Replace the default email/verify route with email-verify
+            $apiUrl = str_replace('/email/verify/', '/email-verify/', $url);
+
+            return (new MailMessage)
+                ->subject('Verify Email Address')
+                ->line('Click the button below to verify your email address.')
+                ->action('Verify Email Address', $apiUrl) // Use the modified API URL
+                ->line('If you did not create an account, no further action is required.');
         });
     }
 }

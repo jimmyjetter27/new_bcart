@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\ImageStorageInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreativeHiringSettingRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\StoreAvatarRequest;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Requests\VerifyEmailRequest;
 use App\Http\Resources\UserResource;
@@ -37,7 +39,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->input('password'))
         ]);
 
-//        event(new Registered($user)); // Trigger email verification
+        event(new Registered($user)); // Trigger email verification
         $token = $user->createToken('auth-token')->plainTextToken;
         return response()->json([
             'success' => true,
@@ -104,7 +106,7 @@ class AuthController extends Controller
             $creative = Auth::user();
             $creative->phone_number = $request->input('phone_number');
             $creative->ghana_post_gps = $request->input('ghana_post_gps');
-            $creative->city = $request->input('phone_number', 'Accra');
+            $creative->city = $request->input('city', 'Accra');
             $creative->physical_address = $request->input('physical_address');
             $creative->description = $request->input('description');
             $creative->creative_hire_status = $request->input('creative_hire_status');
@@ -196,6 +198,26 @@ class AuthController extends Controller
         ], 202);
     }
 
+    public function updateAvatar(StoreAvatarRequest $request, ImageStorageInterface $imageStorage)
+    {
+        $user = Auth::user();
+
+        // Upload the new avatar
+        $uploadedFile = $request->file('avatar');
+        $result = $imageStorage->upload($uploadedFile, 'avatars', $user->profile_picture_public_id ?? null);
+
+        // Update user's avatar info
+        $user->profile_picture_url = $result['secure_url'];
+        $user->profile_picture_public_id = $result['public_id'];
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Avatar updated successfully!',
+            'data' => new UserResource($user)
+        ]);
+    }
+
     public function forgotPassword(Request $request)
     {
         $request->validate([
@@ -258,27 +280,14 @@ class AuthController extends Controller
         }
     }
 
-    public function verifyEmail(Request $request, $id, $hash)
+    public function verifyEmail(EmailVerificationRequest $request)
     {
-        $user = User::findOrFail($id);
+        $request->fulfill();
 
-        // Verify the hash matches the user's email
-        if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-            return response()->json(['success' => false, 'message' => 'Invalid or expired verification link.'], 400);
-        }
-
-        // Check if the email is already verified
-        if ($user->hasVerifiedEmail()) {
-            return response()->json(['success' => false, 'message' => 'Email already verified.'], 400);
-        }
-
-        // Mark the email as verified
-        $user->markEmailAsVerified();
-
-        // Optionally, you can fire the Verified event
-        event(new Verified($user));
-
-        return response()->json(['success' => true, 'message' => 'Email verified successfully.']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Email verified successfully'
+        ]);
     }
 
 

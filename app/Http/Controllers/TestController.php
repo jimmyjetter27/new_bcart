@@ -8,8 +8,11 @@ use App\Services\CloudinaryStorage;
 use App\Services\ImageStorageManager;
 use App\Services\LocalStorage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\ImageManager;
+use Cloudinary\Cloudinary;
 
 class TestController extends Controller
 {
@@ -32,5 +35,27 @@ class TestController extends Controller
         return $result;
     }
 
+    public function deleteImage(ImageStorageInterface $imageStorage)
+    {
+//        if ($imageStorage->delete('avatars/GIcwkNKMKOSBgiMs965FHNcDRReUIzhXIQPgIGhv.jpg'))  {
+        return $imageStorage->delete('creative_uploads/cditiieoyy5cvv0pbohu');    // returns 1
+        if ($imageStorage->delete('creative_uploads/f1w6sb9ii5qpec2myl3r')) {
+            return 'image deleted';
+        }
+        return 'image could not be deleted';
+    }
 
+    public function mailTest()
+    {
+        Mail::raw('Testing Gmail implementation', function ($message) {
+            $message->to('jimmyjetter27@gmail.com')
+                ->subject('Test Mail');
+        });
+    }
+
+    public function imageTest() {
+        $cld = new Cloudinary();
+        $cld->imageTag('fddqxnzlxe8srtsebwi0');
+        return $cld;
+    }
 }

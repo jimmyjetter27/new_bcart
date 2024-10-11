@@ -22,6 +22,22 @@ class Photo extends Model
         'photo_category_id'
     ];
 
+    public function isStoredInCloudinary()
+    {
+        // Cloudinary public IDs typically do not contain file extensions like '.jpg' or '.png'
+        return !str_contains($this->image_public_id, '.');
+    }
+
+
+    public function hasPurchasedPhoto($userId)
+    {
+        // orders table to track this
+        return Order::where('user_id', $userId)
+            ->where('orderable_type', 'photo')
+            ->where('orderable_id', $this->id)
+            ->exists();
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

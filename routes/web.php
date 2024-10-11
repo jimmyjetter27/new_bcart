@@ -21,10 +21,5 @@ Route::get('pass-reset/{token}', function ($token) {
 //    return view('auth.verify-email');
 //})->middleware('auth')->name('verification.notice');
 
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-
-    return view('verify_email');
-})->middleware(['auth', 'signed'])->name('verification.verify');
 
 require __DIR__.'/auth.php';

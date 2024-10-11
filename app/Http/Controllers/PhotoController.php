@@ -8,6 +8,7 @@ use App\Models\Photo;
 use App\Http\Requests\StorePhotoRequest;
 use App\Http\Requests\UpdatePhotoRequest;
 use App\Models\PhotoTag;
+use App\Services\ImageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -20,7 +21,8 @@ class PhotoController extends Controller implements HasMiddleware
     public static function middleware()
     {
         return [
-            new Middleware('auth:sanctum', only: ['store', 'update', 'destroy'])
+            new Middleware('auth:sanctum', only: ['store', 'update', 'destroy']),
+//            new Middleware('optional.auth:sanctum', only: ['show']),
         ];
     }
 
@@ -58,11 +60,11 @@ class PhotoController extends Controller implements HasMiddleware
         }
 
         $uploadedFiles = $request->file('images');
-        $photo = [];
+        $photos = [];  // To collect all the uploaded photos
 
         foreach ($uploadedFiles as $uploadedFile) {
             // Upload the image and save it
-            $result = $imageStorage->upload($uploadedFile, 'creative_uploads');
+            $result = $imageStorage->upload($uploadedFile, 'creative_uploads', null, true);
 
             // Save the photo
             $photo = Photo::create([
@@ -80,30 +82,37 @@ class PhotoController extends Controller implements HasMiddleware
             if ($request->has('tags')) {
                 $tags = $request->input('tags');
                 foreach ($tags as $tag) {
-                    $tagModel = PhotoTag::firstOrCreate(['name' => $tag]);  // Create tag if it doesn't exist
-                    $photo->tags()->attach($tagModel->id);  // Associate the tag with the photo
+                    $tagModel = PhotoTag::firstOrCreate(['name' => $tag]);
+                    $photo->tags()->attach($tagModel->id);
                 }
             }
 
             // Attach category if provided
             if ($request->input('category')) {
-                $photo->photo_categories()->attach($request->input('category'));  // Attach array of categories
+                $photo->photo_categories()->attach($request->input('category'));
             }
+
+            // Add the photo to the collection
+            $photos[] = $photo;
         }
 
         return response()->json([
             'success' => true,
-            'message' => "Your image(s) have been uploaded successfully. However, you'll need to  wait till they are approved to see them on your profile...",
-            'data' => new PhotoResource($photo)
+            'message' => "Your image(s) have been uploaded successfully. However, you'll need to wait till they are approved to see them on your profile...",
+            'data' => PhotoResource::collection($photos)
         ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Photo $photo)
+    public function show(Photo $photo, ImageHelper $imageHelper)
     {
-        //
+        return response()->json([
+            'success' => true,
+            'message' => 'Image found.',
+            'data' => new PhotoResource($photo)
+        ]);
     }
 
     /**

@@ -20,23 +20,14 @@ class GoogleController extends Controller
     public function handleGoogleCallback()
     {
         try {
-
             $user = Socialite::driver('google')->stateless()->user();
-
             $finduser = User::where('google_id', $user->id)->first();
 
             if ($finduser) {
-
+                // Generate token for existing user
                 $token = $finduser->createToken('auth-token')->plainTextToken;
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Sign in successful',
-                    'token' => $token,
-                    'data' => new UserResource($finduser),
-                ]);
-
             } else {
+                // Create a new user
                 $name = $user->getName();
                 $split_name = explode(" ", $name);
                 $newUser = User::firstOrCreate([
@@ -47,20 +38,16 @@ class GoogleController extends Controller
                     'google_id' => $user->id,
                     'type' => 'App\Models\RegularUser'
                 ]);
-
-                return [
-                    'success' => true,
-                    'token' => $newUser->createToken('auth-token')->plainTextToken,
-                    'data' => new UserResource($newUser),
-                ];
+                // Generate token for new user
+                $token = $newUser->createToken('auth-token')->plainTextToken;
             }
 
+            // Redirect back to the frontend with the token (via query params or POST)
+            return redirect()->to(env('FRONTEND_URL') . '/auth/callback?token=' . $token); //TODO add frontend url
+
         } catch (Exception $e) {
-            Log::debug('GoogleSignInError: ' . $e->getMessage());
-            return [
-                'success' => false,
-                'message' => 'An error occurred. Please try again.'
-            ];
+            Log::error('GoogleSignInError: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'An error occurred. Please try again.']);
         }
     }
 

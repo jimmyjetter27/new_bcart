@@ -15,10 +15,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+//        $middleware->append(\App\Http\Middleware\VerifyCsrfToken::class);
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+//            \App\Http\Middleware\CustomCors::class
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'http://localhost:3000',
+            'http://localhost:8000',
+            'api/*',
+//            'sanctum/csrf-cookie',
+
+        ]);
+//
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
         ]);

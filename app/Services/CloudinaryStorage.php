@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\ImageStorageInterface;
 use Cloudinary\Cloudinary;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 
@@ -21,7 +22,7 @@ class CloudinaryStorage implements ImageStorageInterface
             ],
         ]);
     }
-    public function upload($imageFile, $folder): array
+    public function upload($imageFile, $folder, $publicId = null, $authenticated = false): array
     {
         // Generate a unique temporary file name
         $tempFilePath = tempnam(sys_get_temp_dir(), 'upload_');
@@ -34,10 +35,21 @@ class CloudinaryStorage implements ImageStorageInterface
         // Replace backslashes with forward slashes (Windows compatibility)
         $tempFileWithExtension = str_replace('\\', '/', $tempFileWithExtension);
 
+        // Set optional parameters
+
         // Upload the file to Cloudinary
-        $response = $this->cloudinary->uploadApi()->upload($tempFileWithExtension, [
-            'folder' => $folder,
-        ]);
+
+        // Upload the file to Cloudinary
+        $uploadOptions = [
+            'folder'    => $folder,
+            'public_id' => $publicId ?? null,
+        ];
+
+        if ($authenticated) {
+            $uploadOptions['type'] = 'authenticated';
+        }
+
+        $response = $this->cloudinary->uploadApi()->upload($tempFileWithExtension, $uploadOptions);
 
         // Delete the temporary file
         unlink($tempFileWithExtension);
@@ -47,6 +59,20 @@ class CloudinaryStorage implements ImageStorageInterface
             'public_id' => Str::after($response['public_id'], $folder.'/'),
             'secure_url' => $response['secure_url'],
         ];
+    }
+
+
+
+
+
+    public function delete($publicId): bool
+    {
+//        Log::info('publicId: '. $publicId);
+        // destroy method to delete the image by public ID
+        $response = $this->cloudinary->uploadApi()->destroy($publicId);
+
+        // Check if deletion was successful
+        return $response['result'] === 'ok';
     }
 
 }

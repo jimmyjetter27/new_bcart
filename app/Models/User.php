@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Parental\HasChildren;
+//use App\Notifications\VerifyEmail as VerifyEmailNotification;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
