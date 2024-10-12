@@ -62,38 +62,45 @@ class PhotoController extends Controller implements HasMiddleware
         $uploadedFiles = $request->file('images');
         $photos = [];  // To collect all the uploaded photos
 
-        foreach ($uploadedFiles as $uploadedFile) {
-            // Upload the image and save it
-            $result = $imageStorage->upload($uploadedFile, 'creative_uploads', null, true);
+        if ($request->hasFile('images')) {
+            foreach ($uploadedFiles as $uploadedFile) {
+                // Upload the image and save it
+                $result = $imageStorage->upload($uploadedFile, 'creative_uploads', null, true);
 
-            // Save the photo
-            $photo = Photo::create([
-                'user_id' => auth()->id(),
-                'slug' => Str::slug($request->input('title'), '-') . '-' . uniqid(),
-                'title' => $request->input('title'),  // Optional title
-                'description' => $request->input('description'),  // Optional description
-                'price' => $request->input('price'),  // Optional price
-                'image_url' => $result['secure_url'],
-                'image_public_id' => $result['public_id'],
-                'is_approved' => false
-            ]);
+                // Save the photo
+                $photo = Photo::create([
+                    'user_id' => auth()->id(),
+                    'slug' => Str::slug($request->input('title'), '-') . '-' . uniqid(),
+                    'title' => $request->input('title'),  // Optional title
+                    'description' => $request->input('description'),  // Optional description
+                    'price' => $request->input('price'),  // Optional price
+                    'image_url' => $result['secure_url'],
+                    'image_public_id' => $result['public_id'],
+                    'is_approved' => false
+                ]);
 
-            // Handle tags (optional)
-            if ($request->has('tags')) {
-                $tags = $request->input('tags');
-                foreach ($tags as $tag) {
-                    $tagModel = PhotoTag::firstOrCreate(['name' => $tag]);
-                    $photo->tags()->attach($tagModel->id);
+                // Handle tags (optional)
+                if ($request->has('tags')) {
+                    $tags = $request->input('tags');
+                    foreach ($tags as $tag) {
+                        $tagModel = PhotoTag::firstOrCreate(['name' => $tag]);
+                        $photo->tags()->attach($tagModel->id);
+                    }
                 }
-            }
 
-            // Attach category if provided
-            if ($request->input('category')) {
-                $photo->photo_categories()->attach($request->input('category'));
-            }
+                // Attach category if provided
+                if ($request->input('category')) {
+                    $photo->photo_categories()->attach($request->input('category'));
+                }
 
-            // Add the photo to the collection
-            $photos[] = $photo;
+                // Add the photo to the collection
+                $photos[] = $photo;
+            }
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please provide at least one image'
+            ]);
         }
 
         return response()->json([
