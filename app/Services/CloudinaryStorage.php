@@ -24,6 +24,12 @@ class CloudinaryStorage implements ImageStorageInterface
     }
     public function upload($imageFile, $folder, $publicId = null, $authenticated = false): array
     {
+        Log::info('Cloudinary Config: ', [
+            'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+            'api_key' => env('CLOUDINARY_API_KEY'),
+            'api_secret' => env('CLOUDINARY_API_SECRET'),
+        ]);
+
         // Generate a unique temporary file name
         $tempFilePath = tempnam(sys_get_temp_dir(), 'upload_');
         $extension = $imageFile->getClientOriginalExtension();
