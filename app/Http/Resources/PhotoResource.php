@@ -47,10 +47,10 @@ class PhotoResource extends JsonResource
     {
         $user = auth('sanctum')->user();
         $isUploader = $user && $user->id === $this->user_id;
-//        dd([
-//            'user' => $user->id,
-//            'photo user id' => $this->user_id
-//        ]);
+        dd([
+            'user' => $user->id,
+            'photo user id' => $this->user_id
+        ]);
         $hasPurchased = $user ? $this->hasPurchasedPhoto($user->id) : false;
 
         $imageHelper = app(ImageHelper::class);
