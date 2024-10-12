@@ -32,7 +32,7 @@ class Photo extends Model
     public function hasPurchasedPhoto($userId)
     {
         // orders table to track this
-        return Order::where('user_id', $userId)
+        return Order::where('customer_id', $userId)
             ->where('orderable_type', 'photo')
             ->where('orderable_id', $this->id)
             ->exists();
