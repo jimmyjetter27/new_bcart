@@ -55,6 +55,12 @@ class PhotoResource extends JsonResource
 
         $imageHelper = app(ImageHelper::class);
 
+        dd([
+            'user' => $user,
+            'photo_user_id' => $this->user_id,
+            'isUploader' => $isUploader,
+            'hasPurchased' => $hasPurchased
+        ]);
         if ($isUploader || $hasPurchased) {
             dd([
                 'message' => 'is uploader or has purchased',
