@@ -25,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'http://localhost:3000',
             'http://localhost:8000',
             'api/*',
-//            'sanctum/csrf-cookie',
+            'sanctum/csrf-cookie',
 
         ]);
 //
