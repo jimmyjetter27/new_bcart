@@ -22,6 +22,7 @@ class StoreCreativeCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5000',
             'creative_category' => 'required|unique:creative_categories'
         ];
     }

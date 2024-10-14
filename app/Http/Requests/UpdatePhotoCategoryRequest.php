@@ -27,6 +27,7 @@ class UpdatePhotoCategoryRequest extends FormRequest
                 'required',
                 Rule::unique('photo_categories')->ignore($this->route('photo_category')->id),
             ],
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5000'
         ];
     }
 }

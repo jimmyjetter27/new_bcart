@@ -29,27 +29,27 @@ class UserSeeder extends Seeder
             'remember_token' => Str::random(10),
         ]);
 
-        $user2 = User::create([
-            'first_name' => 'Christian',
-            'last_name' => 'Amevor',
-            'username' => 'jumpingjacks',
-            'email' => 'amevchris@gmail.com',
-            'email_verified_at' => now(),
-            'type' => SuperAdmin::class,
-            'password' => Hash::make('password'),
-            'remember_token' => Str::random(10),
-        ]);
+//        $user2 = User::create([
+//            'first_name' => 'Christian',
+//            'last_name' => 'Amevor',
+//            'username' => 'jumpingjacks',
+//            'email' => 'amevchris@gmail.com',
+//            'email_verified_at' => now(),
+//            'type' => SuperAdmin::class,
+//            'password' => Hash::make('password'),
+//            'remember_token' => Str::random(10),
+//        ]);
 
-        $user3 = User::create([
-            'first_name' => 'Neal',
-            'last_name' => 'Brakus',
-            'username' => 'Lone Wolf',
-            'email' => 'jacquelyn79@example.com',
-            'email_verified_at' => now(),
-            'type' => Creative::class,
-            'password' => Hash::make('password'),
-            'remember_token' => Str::random(10),
-        ]);
+//        $user3 = User::create([
+//            'first_name' => 'Neal',
+//            'last_name' => 'Brakus',
+//            'username' => 'Lone Wolf',
+//            'email' => 'jacquelyn79@example.com',
+//            'email_verified_at' => now(),
+//            'type' => Creative::class,
+//            'password' => Hash::make('password'),
+//            'remember_token' => Str::random(10),
+//        ]);
 
         $user4 = User::create([
             'first_name' => 'Laura',
@@ -62,6 +62,6 @@ class UserSeeder extends Seeder
             'remember_token' => Str::random(10),
         ]);
 
-        User::factory()->count(5)->create();
+        User::factory()->count(6)->create();
     }
 }

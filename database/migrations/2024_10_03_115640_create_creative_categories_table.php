@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('creative_categories', function (Blueprint $table) {
             $table->id();
+            $table->string('image_public_id')->nullable();
+            $table->string('image_url')->nullable();
             $table->string('creative_category')->unique();
             $table->timestamps();
         });

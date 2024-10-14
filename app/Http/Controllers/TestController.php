@@ -37,8 +37,9 @@ class TestController extends Controller
 
     public function deleteImage(ImageStorageInterface $imageStorage)
     {
+//        dd('wok');
 //        if ($imageStorage->delete('avatars/GIcwkNKMKOSBgiMs965FHNcDRReUIzhXIQPgIGhv.jpg'))  {
-        return $imageStorage->delete('creative_uploads/cditiieoyy5cvv0pbohu');    // returns 1
+        return $imageStorage->delete('creative_uploads/cxjlf0skbpefnorp8gxo', true);    // returns 1
         if ($imageStorage->delete('creative_uploads/f1w6sb9ii5qpec2myl3r')) {
             return 'image deleted';
         }

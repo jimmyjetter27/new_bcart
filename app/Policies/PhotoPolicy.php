@@ -64,6 +64,11 @@ class PhotoPolicy
             return Response::allow();
         }
 
+        if ($user->isAdmin())
+        {
+            return Response::allow();
+        }
+
         return Response::deny('You are not allowed to delete this resource');
     }
 
@@ -81,5 +86,14 @@ class PhotoPolicy
     public function forceDelete(User $user, Photo $photo): bool
     {
         //
+    }
+
+    public function approve(User $user)
+    {
+        if ($user->isSuperAdmin() || $user->isAdmin()) {
+            return Response::allow();
+        }
+
+        return Response::deny('Request denied.');
     }
 }

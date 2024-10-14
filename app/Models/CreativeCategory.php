@@ -10,5 +10,5 @@ class CreativeCategory extends Model
 
     use HasFactory;
 
-    protected $fillable = ['creative_category'];
+    protected $fillable = ['image_public_id', 'image_url', 'creative_category'];
 }

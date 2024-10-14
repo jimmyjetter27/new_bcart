@@ -24,11 +24,11 @@ class CloudinaryStorage implements ImageStorageInterface
     }
     public function upload($imageFile, $folder, $publicId = null, $authenticated = false): array
     {
-        Log::info('Cloudinary Config: ', [
-            'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-            'api_key' => env('CLOUDINARY_API_KEY'),
-            'api_secret' => env('CLOUDINARY_API_SECRET'),
-        ]);
+//        Log::info('Cloudinary Config: ', [
+//            'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+//            'api_key' => env('CLOUDINARY_API_KEY'),
+//            'api_secret' => env('CLOUDINARY_API_SECRET'),
+//        ]);
 
         // Generate a unique temporary file name
         $tempFilePath = tempnam(sys_get_temp_dir(), 'upload_');
@@ -67,18 +67,35 @@ class CloudinaryStorage implements ImageStorageInterface
         ];
     }
 
-
-
-
-
-    public function delete($publicId): bool
+    public function delete($publicId, $authenticated = false): bool
     {
-//        Log::info('publicId: '. $publicId);
-        // destroy method to delete the image by public ID
-        $response = $this->cloudinary->uploadApi()->destroy($publicId);
+        // Set deletion options based on authentication status
+        $deleteOptions = [];
+        if ($authenticated) {
+            $deleteOptions['type'] = 'authenticated';
+        }
+
+        // Perform the deletion
+        $response = $this->cloudinary->uploadApi()->destroy($publicId, $deleteOptions);
 
         // Check if deletion was successful
         return $response['result'] === 'ok';
     }
+
+    public function deleteMultiple(array $publicIds, $authenticated = false): array
+    {
+        $results = [];
+        foreach ($publicIds as $publicId) {
+            try {
+                $result = $this->delete($publicId, $authenticated);
+                $results[$publicId] = $result ? 'deleted' : 'failed';
+            } catch (\Exception $e) {
+                Log::error('Error deleting image: ' . $publicId, ['error' => $e->getMessage()]);
+                $results[$publicId] = 'error';
+            }
+        }
+        return $results;
+    }
+
 
 }

@@ -17,6 +17,7 @@ class PhotoCategoryResource extends JsonResource
         return [
             'id' => $this->id,
             'photo_category' => $this->photo_category,
+            'image_url' => $this->image_url
         ];
     }
 }

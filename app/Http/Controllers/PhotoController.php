@@ -31,9 +31,17 @@ class PhotoController extends Controller implements HasMiddleware
      */
     public function index(Request $request)
     {
+        $user = auth('sanctum')->user();
+
         $categoriesQuery = QueryBuilder::for(Photo::class)
             ->allowedFilters(['title'])
             ->latest();
+
+        // If the user is authenticated and is not an admin or super admin, apply the approved filter
+        if (!$user || (!$user->isAdmin() && !$user->isSuperAdmin())) {
+            // Apply the filter to only show approved photos
+            $categoriesQuery->where('is_approved', true);
+        }
 
         if ($request->query('paginate') && $request->query('paginate') === 'true') {
             $categories = $categoriesQuery->paginate($request->per_page ?? 10);
@@ -133,8 +141,51 @@ class PhotoController extends Controller implements HasMiddleware
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Photo $photo)
+    public function destroy(Photo $photo, ImageStorageInterface $imageStorage)
     {
-        //
+        $policy = Gate::inspect('delete', $photo);
+        if (!$policy->allowed()) {
+            return response()->json([
+                'success' => false,
+                'message' => $policy->message()
+            ], 403);
+        }
+
+        // Delete the image from Cloudinary (or any other storage)
+        if ($photo->isStoredInCloudinary()) {
+            $imageStorage->delete('creative_uploads/'. $photo->image_public_id, true);
+        }
+
+        // Detach categories and tags before deleting the photo
+        $photo->photo_categories()->detach();
+        $photo->tags()->detach();
+
+        // Delete the photo record from the database
+        $photo->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Photo deleted successfully.'
+        ]);
+    }
+
+    public function approvePhoto(Photo $photo)
+    {
+        $policy = Gate::inspect('approve', Photo::class);
+        if (!$policy->allowed()) {
+            return response()->json([
+                'success' => false,
+                'message' => $policy->message()
+            ], 403);
+        }
+
+        $photo->is_approved = true;
+        $photo->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Photo approved.',
+            'data' => new PhotoResource($photo)
+        ]);
     }
 }

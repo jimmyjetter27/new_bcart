@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Admin;
 use App\Models\Creative;
 use App\Models\RegularUser;
 use App\Models\SuperAdmin;
@@ -28,6 +29,7 @@ class UserFactory extends Factory
     {
         $user_types = [
             SuperAdmin::class,
+            Admin::class,
             RegularUser::class,
             Creative::class
         ];

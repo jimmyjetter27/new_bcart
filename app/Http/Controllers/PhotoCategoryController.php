@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\ImageStorageInterface;
 use App\Http\Requests\StorePhotoCategoryRequest;
 use App\Http\Requests\UpdatePhotoCategoryRequest;
 use App\Http\Resources\PhotoCategoryResource;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class PhotoCategoryController extends Controller implements HasMiddleware
@@ -44,7 +46,7 @@ class PhotoCategoryController extends Controller implements HasMiddleware
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StorePhotoCategoryRequest $request)
+    public function store(StorePhotoCategoryRequest $request, ImageStorageInterface $imageStorage)
     {
         $policy = Gate::inspect('create', PhotoCategory::class);
         if (!$policy->allowed()) {
@@ -54,7 +56,17 @@ class PhotoCategoryController extends Controller implements HasMiddleware
             ], 403);
         }
 
-        $creative_category = PhotoCategory::create($request->validated());
+        if ($request->hasFile('image')) {
+            $uploadedFile = $request->file('image');
+            $result = $imageStorage->upload($uploadedFile, 'photo_categories', Str::slug($request->photo_category) ?? null);
+        }
+
+        $creative_category = PhotoCategory::create([
+            'image_public_id' => $result['public_id'] ?? null,
+            'image_url' => $result['secure_url'] ?? null,
+            'photo_category' => $result->photo_category
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Photo category added.',
@@ -77,7 +89,7 @@ class PhotoCategoryController extends Controller implements HasMiddleware
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdatePhotoCategoryRequest $request, PhotoCategory $photoCategory)
+    public function update(UpdatePhotoCategoryRequest $request, PhotoCategory $photoCategory, ImageStorageInterface $imageStorage)
     {
         $policy = Gate::inspect('update', [PhotoCategory::class, $photoCategory]);
         if (!$policy->allowed()) {
@@ -87,7 +99,27 @@ class PhotoCategoryController extends Controller implements HasMiddleware
             ], 403);
         }
 
+        // Handle image update
+        if ($request->hasFile('image')) {
+            // Delete the old image
+            if ($photoCategory->image_public_id) {
+                $imageStorage->delete('photo_categories/' . $photoCategory->image_public_id);
+            }
+
+            // Upload the new image
+            $uploadedFile = $request->file('image');
+            $result = $imageStorage->upload($uploadedFile, 'photo_categories', $request->photo_category ?? null);
+
+            // Update the image details in the model
+            $photoCategory->update([
+                'image_public_id' => $result['public_id'],
+                'image_url' => $result['secure_url'],
+            ]);
+        }
+
+        // Update other fields
         $photoCategory->update($request->validated());
+
         return response()->json([
             'success' => true,
             'message' => 'Photo category updated.',
@@ -98,7 +130,7 @@ class PhotoCategoryController extends Controller implements HasMiddleware
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PhotoCategory $photoCategory)
+    public function destroy(PhotoCategory $photoCategory, ImageStorageInterface $imageStorage)
     {
         $policy = Gate::inspect('delete', [PhotoCategory::class, $photoCategory]);
         if (!$policy->allowed()) {
@@ -108,10 +140,15 @@ class PhotoCategoryController extends Controller implements HasMiddleware
             ], 403);
         }
 
+        if ($photoCategory->image_public_id) {
+            $imageStorage->delete('photo_categories/' . $photoCategory->image_public_id);
+        }
+
         $photoCategory->delete();
+
         return response()->json([
             'success' => true,
-            'message' => 'Data deleted.'
+            'message' => 'Photo category deleted.'
         ]);
     }
 }

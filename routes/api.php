@@ -39,6 +39,13 @@ Route::group(['middleware' => [ForceJson::class]], function () {
         Route::put('update-avatar', [AuthController::class, 'updateAvatar']);
     });
 
+    Route::put('approve-photo', [\App\Http\Controllers\PhotoController::class, 'approvePhoto']);
+
+    Route::get('featured-creative', [\App\Http\Controllers\CreativeController::class, 'featuredCreative']);
+    Route::get('featured-creatives', [\App\Http\Controllers\CreativeController::class, 'featuredCreatives']);
+
+    Route::get('featured-creative-categories', [\App\Http\Controllers\CreativeCategoryController::class, 'featuredCreativeCategories']);
+
 });
 
 Route::apiResources([

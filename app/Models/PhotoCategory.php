@@ -9,7 +9,7 @@ class PhotoCategory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['photo_category', 'image'];
+    protected $fillable = ['image_public_id', 'image_url', 'photo_category'];
 
     public function photos()
     {

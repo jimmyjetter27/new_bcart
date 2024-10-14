@@ -27,6 +27,7 @@ class UpdateCreativeCategoryRequest extends FormRequest
                 'required',
                 Rule::unique('creative_categories')->ignore($this->route('creative_category')->id),
             ],
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5000'
         ];
     }
 }

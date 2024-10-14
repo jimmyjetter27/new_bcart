@@ -22,6 +22,7 @@ class StorePhotoCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5000',
             'photo_category' => 'required|unique:photo_categories'
         ];
     }

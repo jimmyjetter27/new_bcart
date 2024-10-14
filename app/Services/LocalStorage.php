@@ -34,7 +34,7 @@ class LocalStorage implements ImageStorageInterface
 
 
 
-    public function delete($publicId): bool
+    public function delete($publicId, $authenticated = false): bool
     {
         // Construct the full file path based on the public ID
         $filePath = $publicId;

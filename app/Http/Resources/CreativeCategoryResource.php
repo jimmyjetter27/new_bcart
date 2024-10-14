@@ -17,6 +17,7 @@ class CreativeCategoryResource extends JsonResource
         return [
             'id' => $this->id,
             'creative_category' => $this->creative_category,
+            'image_url' => $this->image_url
         ];
     }
 }
