@@ -47,6 +47,7 @@ class CreativeHiringSettingRequest extends FormRequest
             'payment_details.bank_acc_num' => 'nullable|string|unique:payment_information,bank_acc_num',
             'payment_details.momo_acc_name' => 'nullable|string',
             'payment_details.momo_acc_number' => 'nullable|numeric|unique:payment_information,momo_acc_number',
+            'payment_details.preferred_payment_account' => 'nullable|in:bank_account,momo',
 
             'creative_categories' => 'required|array',
             'creative_categories.*' => 'exists:creative_categories,id',

@@ -17,7 +17,8 @@ class PaymentInformation extends Model
         'bank_acc_name',
         'bank_acc_num',
         'momo_acc_name',
-        'momo_acc_number'
+        'momo_acc_number',
+        'preferred_payment_account'
     ];
 
     public function user()

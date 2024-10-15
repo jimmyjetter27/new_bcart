@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Http\Controllers\Controller;
 use App\Models\Photo;
 use App\Models\Transaction;
+use App\Services\PayStackService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -130,7 +131,7 @@ class OrderController extends Controller
 //        ]);
 //    }
 
-    public function buyPhotos(Request $request)
+    public function buyPhotos(Request $request, PayStackService $paymentService)
     {
         $user = Auth::user();
         $photoIds = $request->input('photo_ids');
@@ -138,8 +139,27 @@ class OrderController extends Controller
         // Fetch selected photos
         $photos = Photo::whereIn('id', $photoIds)->get();
 
+        // Check if the pricing table is populated
+        if ($photos->isEmpty() || $photos->contains(fn($photo) => is_null($photo->price))) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please ensure all selected photos have prices set.',
+            ], 400);
+        }
+
         // Calculate total price
         $totalPrice = $photos->sum('price');
+
+        // Fetch the user's preferred payment method
+        $paymentInfo = $user->paymentInfo;
+        if (!$paymentInfo || !$paymentInfo->preferred_payment_account) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please set up your preferred payment method before purchasing.',
+            ], 400);
+        }
+
+        $preferredPaymentMethod = $paymentInfo->preferred_payment_account;
 
         // Create Order
         $order = Order::create([
@@ -149,25 +169,29 @@ class OrderController extends Controller
             'transaction_status' => 'pending'
         ]);
 
-        // Attach photos to the order
+        // Attach photos to the order (through polymorphic relation)
         foreach ($photos as $photo) {
             $order->orderable()->associate($photo);
         }
 
-        // Process the payment using a payment gateway (Paystack)
-        $transactionResult = $this->paymentService->processPayment($order, $request->input('payment_method'));
+        // Process the payment using Paystack (using preferred payment method)
+        if ($preferredPaymentMethod === 'bank_account') {
+            $transactionResult = $paymentService->chargeWithCard();
+        } else {
+            $transactionResult = $paymentService->chargeWithMobileMoney();
+        }
 
-        // Create transaction
+        // Create transaction record
         $transaction = Transaction::create([
             'order_id' => $order->id,
-            'transaction_id' => $transactionResult->transaction_id,
-            'payment_method' => $request->input('payment_method'),
+            'transaction_id' => $transactionResult['transaction_id'],
+            'payment_method' => $preferredPaymentMethod,
             'amount' => $totalPrice,
-            'status' => $transactionResult->status,
+            'status' => $transactionResult['status'],
             'transaction_date' => now(),
         ]);
 
-        // Update order status
+        // Update order status based on the transaction result
         $order->update([
             'transaction_status' => $transaction->status === 'completed' ? 'completed' : 'failed'
         ]);
@@ -178,5 +202,6 @@ class OrderController extends Controller
             'order' => $order
         ]);
     }
+
 
 }
