@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\HiringResource;
 use App\Models\Hiring;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreHiringRequest;
+use App\Http\Requests\UpdateHiringRequest;
 
 class HiringController extends Controller
 {
@@ -19,9 +21,28 @@ class HiringController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreHiringRequest $request)
     {
-        //
+        $validatedData = $request->validated();
+
+        $hiring = Hiring::create([
+            'creative_id' => $validatedData['creative_id'],
+            'regular_user_id' => auth()->id(),
+            'hire_date' => $validatedData['hire_date'],
+            'location' => $validatedData['location'],
+            'num_days' => $validatedData['num_days'],
+            'num_hours' => $validatedData['num_hours'] ?? null,
+            'description' => $validatedData['description'] ?? null,
+        ]);
+
+        // Attach selected categories to the hiring
+        $hiring->categories()->attach($validatedData['categories']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Creative hiring initiated successfully.',
+            'data' => new HiringResource($hiring)
+        ]);
     }
 
     /**
@@ -35,7 +56,7 @@ class HiringController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Hiring $hiring)
+    public function update(UpdateHiringRequest $request, Hiring $hiring)
     {
         //
     }

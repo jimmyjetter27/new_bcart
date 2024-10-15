@@ -32,36 +32,37 @@ Route::group(['middleware' => [ForceJson::class]], function () {
 
 
     Route::group(['middleware' => ['auth:sanctum', 'verified']], function () {
-        Route::get('user-profile', [AuthController::class, 'userProfile']);
+        Route::get('user-profile', [AuthController::class, 'userProfile'])->withoutMiddleware('verified');
         Route::put('update-profile', [AuthController::class, 'updateProfile']);
         Route::put('update-creative-details', [AuthController::class, 'updateCreativeDetails']);
         Route::put('update-password', [AuthController::class, 'updatePassword']);
         Route::put('update-avatar', [AuthController::class, 'updateAvatar']);
+
+        Route::put('approve-photo', [\App\Http\Controllers\PhotoController::class, 'approvePhoto']);
+
+        Route::post('buy-photos', [\App\Http\Controllers\OrderController::class, 'buyPhotos']);
+        Route::post('hire-creative', [\App\Http\Controllers\HiringController::class, 'store']);
+        Route::post('suggest-upload', [\App\Http\Controllers\SuggestUploadController::class, 'store']);
     });
 
-    Route::put('approve-photo', [\App\Http\Controllers\PhotoController::class, 'approvePhoto']);
 
-    Route::post('buy-photos', [\App\Http\Controllers\OrderController::class, 'buyPhotos']);
-    Route::post('hire-creative', [\App\Http\Controllers\HiringController::class, 'store']);
+    Route::get('featured-creative', [\App\Http\Controllers\CreativeController::class, 'featuredCreative']);
+    Route::get('featured-creatives', [\App\Http\Controllers\CreativeController::class, 'featuredCreatives']);
 
+    Route::get('featured-creative-categories', [\App\Http\Controllers\CreativeCategoryController::class, 'featuredCreativeCategories']);
+
+    Route::get('related-images/{photo}', [\App\Http\Controllers\PhotoController::class, 'relatedImages']);
+
+    Route::apiResources([
+        'creatives' => \App\Http\Controllers\CreativeController::class,
+        'creative-categories' => \App\Http\Controllers\CreativeCategoryController::class,
+        'photo-categories' => \App\Http\Controllers\PhotoCategoryController::class,
+        'photos' => \App\Http\Controllers\PhotoController::class
+    ]);
+
+    Route::get('paystack-callback', []);
 
 });
-
-Route::get('featured-creative', [\App\Http\Controllers\CreativeController::class, 'featuredCreative']);
-Route::get('featured-creatives', [\App\Http\Controllers\CreativeController::class, 'featuredCreatives']);
-
-Route::get('featured-creative-categories', [\App\Http\Controllers\CreativeCategoryController::class, 'featuredCreativeCategories']);
-
-Route::get('related-images/{photo}', [\App\Http\Controllers\PhotoController::class, 'relatedImages']);
-
-Route::apiResources([
-    'creatives' => \App\Http\Controllers\CreativeController::class,
-    'creative-categories' => \App\Http\Controllers\CreativeCategoryController::class,
-    'photo-categories' => \App\Http\Controllers\PhotoCategoryController::class,
-    'photos' => \App\Http\Controllers\PhotoController::class
-]);
-
-Route::get('paystack-callback', []);
 
 
 Route::get('clear-database', [\App\Http\Controllers\MigrationController::class, 'clearDatabase']);

@@ -32,8 +32,9 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('hiring_id')->references('id')->on('hirings')->onDelete('cascade');
-            $table->foreign('creative_category_id')->references('id')->on('categories')->onDelete('cascade');
+            $table->foreign('creative_category_id')->references('id')->on('creative_categories')->onDelete('cascade');
         });
+
     }
 
     /**

@@ -35,8 +35,14 @@ class Hiring extends Model
 //        return $this->morphOne(Payment::class, 'payable');
 //    }
 
+//    public function categories()
+//    {
+//        return $this->belongsToMany(CreativeCategory::class, 'hiring_creative_categories');
+//    }
+
     public function categories()
     {
-        return $this->belongsToMany(CreativeCategory::class, 'hiring_creative_categories');
+        return $this->belongsToMany(CreativeCategory::class, 'hiring_categories');
     }
+
 }
