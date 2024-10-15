@@ -103,7 +103,7 @@ class PhotoCategoryController extends Controller implements HasMiddleware
         if ($request->hasFile('image')) {
             // Delete the old image
             if ($photoCategory->image_public_id) {
-                $imageStorage->delete('photo_categories/' . $photoCategory->image_public_id);
+                $imageStorage->delete('photo_categories/' . Str::slug($photoCategory->image_public_id) ?? Str::slug($request->photo_category));
             }
 
             // Upload the new image

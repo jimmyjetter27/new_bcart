@@ -47,24 +47,19 @@ class PhotoResource extends JsonResource
     {
         $user = auth('sanctum')->user();
         $isUploader = $user && intval($user->id) === intval($this->user_id);
-//        dd([
-//            'user' => $user->id,
-//            'photo user id' => $this->user_id
-//        ]);
+
         $hasPurchased = $user ? $this->hasPurchasedPhoto($user->id) : false;
+
+        $freeImage = $this->freeImage();
 
         $imageHelper = app(ImageHelper::class);
 
-//        dd([
-//            'user' => $user,
-//            'photo_user_id' => $this->user_id,
-//            'isUploader' => $isUploader,
-//            'hasPurchased' => $hasPurchased
-//        ]);
         if ($isUploader || $hasPurchased) {
 
             // Return the signed URL to the original image
             return $imageHelper->getSignedImageUrl($this->image_public_id);
+        } else if ($freeImage) {
+            return $this->image_url; // Pass the public image url if image is free
         } else {
             // Return the watermarked image URL
             return $imageHelper->applyCloudinaryWatermark($this->image_public_id);

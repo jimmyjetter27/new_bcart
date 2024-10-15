@@ -41,12 +41,16 @@ Route::group(['middleware' => [ForceJson::class]], function () {
 
     Route::put('approve-photo', [\App\Http\Controllers\PhotoController::class, 'approvePhoto']);
 
-    Route::get('featured-creative', [\App\Http\Controllers\CreativeController::class, 'featuredCreative']);
-    Route::get('featured-creatives', [\App\Http\Controllers\CreativeController::class, 'featuredCreatives']);
-
-    Route::get('featured-creative-categories', [\App\Http\Controllers\CreativeCategoryController::class, 'featuredCreativeCategories']);
+    Route::post('buy-photos', [\App\Http\Controllers\OrderController::class, 'buyPhotos']);
 
 });
+
+Route::get('featured-creative', [\App\Http\Controllers\CreativeController::class, 'featuredCreative']);
+Route::get('featured-creatives', [\App\Http\Controllers\CreativeController::class, 'featuredCreatives']);
+
+Route::get('featured-creative-categories', [\App\Http\Controllers\CreativeCategoryController::class, 'featuredCreativeCategories']);
+
+Route::get('related-images/{photo}', [\App\Http\Controllers\PhotoController::class, 'relatedImages']);
 
 Route::apiResources([
     'creatives' => \App\Http\Controllers\CreativeController::class,
@@ -54,6 +58,8 @@ Route::apiResources([
     'photo-categories' => \App\Http\Controllers\PhotoCategoryController::class,
     'photos' => \App\Http\Controllers\PhotoController::class
 ]);
+
+Route::get('paystack-callback', []);
 
 
 Route::get('clear-database', [\App\Http\Controllers\MigrationController::class, 'clearDatabase']);
@@ -66,6 +72,8 @@ Route::get('active', function () {
         'data' => new \App\Http\Resources\UserResource(\App\Models\User::latest()->first())
     ]);
 });
+
+Route::post('test-payment', [\App\Http\Controllers\TestController::class, 'testPayment']);
 
 Route::get('image-test', [\App\Http\Controllers\TestController::class, 'imageTest']);
 

@@ -73,7 +73,14 @@ class PhotoController extends Controller implements HasMiddleware
         if ($request->hasFile('images')) {
             foreach ($uploadedFiles as $uploadedFile) {
                 // Upload the image and save it
-                $result = $imageStorage->upload($uploadedFile, 'creative_uploads', null, true);
+
+                // Check if image is free or not by looking out for the price key
+                if ($request->has('price')) {
+                    $authenticated = true;
+                } else {
+                    $authenticated = null;
+                }
+                $result = $imageStorage->upload($uploadedFile, 'creative_uploads', null, $authenticated);
 
                 // Save the photo
                 $photo = Photo::create([
@@ -153,7 +160,7 @@ class PhotoController extends Controller implements HasMiddleware
 
         // Delete the image from Cloudinary (or any other storage)
         if ($photo->isStoredInCloudinary()) {
-            $imageStorage->delete('creative_uploads/'. $photo->image_public_id, true);
+            $imageStorage->delete('creative_uploads/' . $photo->image_public_id, true);
         }
 
         // Detach categories and tags before deleting the photo
@@ -186,6 +193,38 @@ class PhotoController extends Controller implements HasMiddleware
             'success' => true,
             'message' => 'Photo approved.',
             'data' => new PhotoResource($photo)
+        ]);
+    }
+
+    public function relatedImages(Photo $photo)
+    {
+        // First, get the categories of the current photo
+        $photoCategories = $photo->photo_categories()->pluck('photo_category_id');
+
+        // Get the tags of the current photo
+        $photoTags = $photo->tags()->pluck('photo_tag_id');
+
+        // Query to get photos that are in the same categories, excluding the current photo
+        $relatedImagesQuery = Photo::whereHas('photo_categories', function ($query) use ($photoCategories) {
+            $query->whereIn('photo_category_id', $photoCategories);
+        })
+            ->whereNot('id', $photo->id) // Use whereNot to exclude the current photo
+            ->where('is_approved', true); // Ensure the photo is approved
+
+        // If the current photo has tags, refine the query by matching the tags
+        if ($photoTags->isNotEmpty()) {
+            $relatedImagesQuery->orWhereHas('tags', function ($query) use ($photoTags) {
+                $query->whereIn('photo_tag_id', $photoTags);
+            });
+        }
+
+        // Fetch the related images (e.g., limit to 10 related images)
+        $relatedImages = $relatedImagesQuery->limit(10)->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Related images fetched successfully.',
+            'data' => PhotoResource::collection($relatedImages),
         ]);
     }
 }

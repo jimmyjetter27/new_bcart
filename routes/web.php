@@ -17,6 +17,8 @@ Route::get('pass-reset/{token}', function ($token) {
     ];
 });
 
+Route::view('flutter-webhook', 'paystack_hook');
+
 //Route::get('/email/verify', function () {
 //    return view('auth.verify-email');
 //})->middleware('auth')->name('verification.notice');

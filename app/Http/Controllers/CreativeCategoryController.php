@@ -121,7 +121,9 @@ class CreativeCategoryController extends Controller implements HasMiddleware
 
             // Upload the new image
             $uploadedFile = $request->file('image');
-            $result = $imageStorage->upload($uploadedFile, 'creative_categories', Str::slug($request->creative_category) ?? null);
+            $result = $imageStorage->upload(
+                $uploadedFile, 'creative_categories',
+                Str::slug($creativeCategory->creative_category) ?? Str::slug($request->creative_category));
 
             // Update the image fields in the creative category
             $creativeCategory->image_public_id = $result['public_id'];
@@ -155,7 +157,7 @@ class CreativeCategoryController extends Controller implements HasMiddleware
         }
 
         if ($creativeCategory->image_public_id) {
-            $imageStorage->delete('creative_uploads/'. $creativeCategory->image_public_id, true);
+            $imageStorage->delete('creative_uploads/' . $creativeCategory->image_public_id, true);
         }
 
         $creativeCategory->delete();

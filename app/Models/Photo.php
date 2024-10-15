@@ -38,6 +38,11 @@ class Photo extends Model
             ->exists();
     }
 
+    public function freeImage()
+    {
+        return (bool) $this->price;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -64,14 +69,5 @@ class Photo extends Model
         return $this->belongsToMany(PhotoTag::class, 'photo_tag', 'photo_id', 'photo_tag_id');
     }
 
-
-//    public function photo_tags()
-//    {
-//        return $this->belongsTo(
-//            PhotoCategory::class,
-//            'photo_category_id',
-//            'id'
-//        );
-//    }
 
 }
