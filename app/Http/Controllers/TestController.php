@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\ImageStorageInterface;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Services\CloudinaryStorage;
 use App\Services\ImageStorageManager;
 use App\Services\LocalStorage;
@@ -70,5 +71,21 @@ class TestController extends Controller
             'currency' => 'GHS'
         ];
         return $service->chargeWithMobileMoney($payload);
+    }
+
+    public function verifyUser($email)
+    {
+        $user = User::where('email', $email)->first();
+        if ($user)
+        {
+            $user->email_verified_at = now();
+            $user->save();
+            return [
+                'message' => 'email verified',
+                'data' => new User($user)
+            ];
+        }
+
+        return 'user with '.$email.' not found';
     }
 }
