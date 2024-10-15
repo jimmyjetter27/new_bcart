@@ -20,30 +20,40 @@ class GoogleController extends Controller
     public function handleGoogleCallback()
     {
         try {
-            $user = Socialite::driver('google')->stateless()->user();
-            $finduser = User::where('google_id', $user->id)->first();
+            $googleUser = Socialite::driver('google')->stateless()->user();
+            // Check if the user already exists by google_id or email
+            $finduser = User::where('google_id', $googleUser->id)->orWhere('email', $googleUser->getEmail())->first();
 
             if ($finduser) {
+                // If user exists, update google_id if it's not set
+                if (!$finduser->google_id) {
+                    $finduser->update(['google_id' => $googleUser->id]);
+                }
                 // Generate token for existing user
                 $token = $finduser->createToken('auth-token')->plainTextToken;
             } else {
-                // Create a new user
-                $name = $user->getName();
+                // Handle case where name might be a single word
+                $name = $googleUser->getName();
                 $split_name = explode(" ", $name);
-                $newUser = User::firstOrCreate([
-                    'first_name' => $split_name[0],
-                    'last_name' => $split_name[1],
-                    'email' => $user->getEmail(),
+                $first_name = $split_name[0]; // First part of the name
+                $last_name = isset($split_name[1]) ? $split_name[1] : ''; // If no last name, leave empty
+
+                // Create a new user
+                $newUser = User::create([
+                    'first_name' => $first_name,
+                    'last_name' => $last_name, // Will be empty if no last name was provided
+                    'email' => $googleUser->getEmail(),
                     'email_verified_at' => now(),
-                    'google_id' => $user->id,
+                    'google_id' => $googleUser->id,
                     'type' => 'App\Models\RegularUser'
                 ]);
+
                 // Generate token for new user
                 $token = $newUser->createToken('auth-token')->plainTextToken;
             }
 
             // Redirect back to the frontend with the token (via query params or POST)
-            return redirect()->to(env('FRONTEND_URL') . '/auth/callback?token=' . $token); //TODO add frontend url
+            return redirect()->to(env('FRONTEND_URL') . '/auth/callback?token=' . $token);
 
         } catch (Exception $e) {
             Log::error('GoogleSignInError: ' . $e->getMessage());

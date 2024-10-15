@@ -78,13 +78,22 @@ class AuthController extends Controller
 
     public function userProfile()
     {
-        $user = Auth::user();
+        $user = Auth::user()->load([
+            'pricing',
+            'paymentInfo',
+            'creative_categories',
+            'photos' => function ($query) {
+                $query->limit(5); // Load only 5 photos
+            }
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Profile found',
             'data' => new UserResource($user)
         ]);
     }
+
 
     public function updateProfile(UpdateProfileRequest $request)
     {
