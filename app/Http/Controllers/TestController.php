@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\ImageStorageInterface;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\CloudinaryStorage;
 use App\Services\ImageStorageManager;
@@ -82,7 +83,7 @@ class TestController extends Controller
             $user->save();
             return [
                 'message' => 'email verified',
-                'data' => new User($user)
+                'data' => new UserResource($user)
             ];
         }
 
