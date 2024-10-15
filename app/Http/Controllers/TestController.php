@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Contracts\ImageStorageInterface;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PhotoResource;
 use App\Http\Resources\UserResource;
+use App\Models\Photo;
 use App\Models\User;
 use App\Services\CloudinaryStorage;
 use App\Services\ImageStorageManager;
@@ -88,5 +90,31 @@ class TestController extends Controller
         }
 
         return 'user with '.$email.' not found';
+    }
+
+    public function handleCallback(Request $request)
+    {
+        $token = $request->query('token');
+
+        // Check if the token exists
+        if (!$token) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No token provided.',
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Google sign-in successful!',
+            'token' => $token,
+        ]);
+    }
+
+    public function approvePhoto(Photo $photo)
+    {
+        $photo->is_approved = true;
+        $photo->save();
+        return new PhotoResource($photo);
     }
 }

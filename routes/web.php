@@ -19,6 +19,8 @@ Route::get('pass-reset/{token}', function ($token) {
 
 Route::view('flutter-webhook', 'paystack_hook');
 
+Route::get('/auth/callback', [\App\Http\Controllers\TestController::class, 'handleCallback']);
+
 //Route::get('/email/verify', function () {
 //    return view('auth.verify-email');
 //})->middleware('auth')->name('verification.notice');

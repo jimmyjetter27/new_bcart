@@ -78,6 +78,7 @@ Route::get('active', function () {
 });
 
 Route::post('test-payment', [\App\Http\Controllers\TestController::class, 'testPayment']);
+Route::get('approve-photo/{photo}', [\App\Http\Controllers\TestController::class, 'approvePhoto']);
 
 Route::get('image-test', [\App\Http\Controllers\TestController::class, 'imageTest']);
 
