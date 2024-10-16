@@ -117,4 +117,20 @@ class TestController extends Controller
         $photo->save();
         return new PhotoResource($photo);
     }
+
+    public function listEnvs()
+    {
+//        return [
+//            'db_connection' => env('DB_CONNECTION'),
+//            'db_host' => env('DB_HOST'),
+//            'db_port' => env('DB_PORT'),
+//            'db_username' => env('DB_USERNAME'),
+//            'db_password' => env('DB_PASSWORD'),
+//            'google_client_id' => env('GOOGLE_CLIENT_ID'),
+//            'google_client_secret' => env('GOOGLE_CLIENT_SECRET'),
+//            'google_redirect_url'
+//
+//        ];
+        return response()->json($_ENV);
+    }
 }

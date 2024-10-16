@@ -76,6 +76,7 @@ Route::get('active', function () {
         'data' => new \App\Http\Resources\UserResource(\App\Models\User::latest()->first())
     ]);
 });
+Route::get('list-envs', [\App\Http\Controllers\TestController::class, 'listEnvs'])->middleware('auth:sanctum');
 
 Route::post('test-payment', [\App\Http\Controllers\TestController::class, 'testPayment']);
 Route::get('approve-photo/{photo}', [\App\Http\Controllers\TestController::class, 'approvePhoto']);
