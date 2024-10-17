@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreativeHiringSettingRequest extends FormRequest
@@ -44,13 +45,29 @@ class CreativeHiringSettingRequest extends FormRequest
             'payment_details.bank_name' => 'nullable|string',
             'payment_details.bank_branch' => 'nullable|string',
             'payment_details.bank_acc_name' => 'nullable|string',
-            'payment_details.bank_acc_num' => 'nullable|string|unique:payment_information,bank_acc_num',
+            'payment_details.bank_acc_num' => [
+                'nullable',
+                'string',
+                Rule::unique('payment_information', 'bank_acc_num')->ignore($this->user()->paymentInfo?->id)
+            ],
             'payment_details.momo_acc_name' => 'nullable|string',
-            'payment_details.momo_acc_number' => 'nullable|numeric|unique:payment_information,momo_acc_number',
+            'payment_details.momo_acc_number' => [
+                'nullable',
+                'numeric',
+                Rule::unique('payment_information', 'momo_acc_number')->ignore($this->user()->paymentInfo?->id)
+            ],
             'payment_details.preferred_payment_account' => 'nullable|in:bank_account,momo',
 
             'creative_categories' => 'required|array',
             'creative_categories.*' => 'exists:creative_categories,id',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'payment_details.bank_acc_num.unique' => 'The bank account number you provided is already in use. Please provide a different account number.',
+            'payment_details.momo_acc_number.unique' => 'The mobile money number you provided is already in use. Please provide a different mobile money number.',
         ];
     }
 }
