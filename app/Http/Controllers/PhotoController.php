@@ -208,7 +208,7 @@ class PhotoController extends Controller implements HasMiddleware
         $relatedImagesQuery = Photo::whereHas('photo_categories', function ($query) use ($photoCategories) {
             $query->whereIn('photo_category_id', $photoCategories);
         })
-            ->whereNot('id', $photo->id) // Use whereNot to exclude the current photo
+            ->where('id', '!=', $photo->id) // Exclude the current photo by checking 'id !='
             ->where('is_approved', true); // Ensure the photo is approved
 
         // If the current photo has tags, refine the query by matching the tags
@@ -218,7 +218,6 @@ class PhotoController extends Controller implements HasMiddleware
             });
         }
 
-        // Fetch the related images (e.g., limit to 10 related images)
         $relatedImages = $relatedImagesQuery->limit(10)->get();
 
         return response()->json([

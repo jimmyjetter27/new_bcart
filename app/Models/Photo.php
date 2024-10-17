@@ -40,7 +40,7 @@ class Photo extends Model
 
     public function freeImage()
     {
-        return (bool) $this->price;
+        return $this->price == 0 || is_null($this->price);
     }
 
     public function user()
