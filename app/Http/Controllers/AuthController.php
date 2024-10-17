@@ -57,11 +57,22 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $request->email)->first();
+
 //        if (Auth::attempt($credentials)) {
         if ($user && Hash::check($request->password, $user->password)) {
 //            $user = Auth::user();
 
             $token = $user->createToken('auth-token')->plainTextToken;
+
+            // Load additional details
+            $user->load([
+                'pricing',
+                'paymentInfo',
+                'creative_categories',
+                'photos' => function ($query) {
+                    $query->limit(5); // Load only 5 photos
+                }
+            ]);
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful',
