@@ -23,7 +23,11 @@ class CreativeHiringSettingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone_number' => 'required|regex:/^0[0-9]{9}$/',
+            'phone_number' => [
+                'required',
+                'regex:/^0[0-9]{9}$/',
+                Rule::unique('users', 'phone_number')->ignore($this->user()->id)
+            ],
             'ghana_post_gps' => 'required',
             'city' => 'required',
             'physical_address' => 'required',
