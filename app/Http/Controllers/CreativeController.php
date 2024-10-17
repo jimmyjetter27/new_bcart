@@ -47,6 +47,12 @@ class CreativeController extends Controller implements HasMiddleware
             ->latest()
             ->paginate($request->per_page ?? 15);
 
+        $creatives->load([
+            'photos' => function ($query) {
+                $query->paginate(15);
+            }
+        ]);
+
         return UserResource::collection($creatives);
     }
 
