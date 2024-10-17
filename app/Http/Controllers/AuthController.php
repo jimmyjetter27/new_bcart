@@ -144,18 +144,20 @@ class AuthController extends Controller
             }
 
 
-            // Step 4: Store Payment Information
+            // Step 4: Store or Update Payment Information9
             if ($request->has('payment_details')) {
-                PaymentInformation::create([
-                    'user_id' => $creative->id,
-                    'bank_name' => $request->input('payment_details.bank_name'),
-                    'bank_branch' => $request->input('payment_details.bank_branch'),
-                    'bank_acc_name' => $request->input('payment_details.bank_acc_name'),
-                    'bank_acc_num' => $request->input('payment_details.bank_acc_num'),
-                    'momo_acc_name' => $request->input('payment_details.momo_acc_name'),
-                    'momo_acc_number' => $request->input('payment_details.momo_acc_number'),
-                    'preferred_payment_account' => $request->input('payment_details.preferred_payment_account', 'bank_account'),
-                ]);
+                PaymentInformation::updateOrCreate(
+                    ['user_id' => $creative->id],  // Match on user_id
+                    [
+                        'bank_name' => $request->input('payment_details.bank_name'),
+                        'bank_branch' => $request->input('payment_details.bank_branch'),
+                        'bank_acc_name' => $request->input('payment_details.bank_acc_name'),
+                        'bank_acc_num' => $request->input('payment_details.bank_acc_num'),
+                        'momo_acc_name' => $request->input('payment_details.momo_acc_name'),
+                        'momo_acc_number' => $request->input('payment_details.momo_acc_number'),
+                        'preferred_payment_account' => $request->input('payment_details.preferred_payment_account', 'bank_account'),
+                    ]
+                );
             }
 
             if ($request->has('creative_categories')) {
