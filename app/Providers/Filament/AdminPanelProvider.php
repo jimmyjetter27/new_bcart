@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\AdminResource\Widgets\StatsOverview;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -38,8 +39,32 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+//                Widgets\FilamentInfoWidget::class,
+//                StatsOverview::class
             ])
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            //            ->resources([
+//                \App\Filament\Resources\UserResource::class,
+//                \App\Filament\Resources\OrderResource::class,
+//            ])
+//            ->sidebarGroups([
+//                [
+//                    'label' => 'Management',
+//                    'items' => [
+//                        [
+//                            'label' => 'Users',
+//                            'icon' => 'heroicon-o-users', // Optional icon
+//                            'url' => route('filament.resources.users.index'), // Link to users
+//                        ],
+//                        [
+//                            'label' => 'Orders',
+//                            'icon' => 'heroicon-o-arrow-trending-up', // Optional icon
+//                            'url' => route('filament.resources.orders.index'), // Link to orders
+//                        ],
+//                    ],
+//                ],
+//            ])
+            ->navigation()
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -53,6 +78,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->profile(Pages\Auth\EditProfile::class);
     }
 }

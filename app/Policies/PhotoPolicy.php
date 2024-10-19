@@ -13,7 +13,7 @@ class PhotoPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return true;
     }
 
     /**
@@ -61,6 +61,10 @@ class PhotoPolicy
     {
         if ($user->isCreative() && $user->id === $photo->user_id)
         {
+            return Response::allow();
+        }
+
+        if ($user->isSuperAdmin()) {
             return Response::allow();
         }
 

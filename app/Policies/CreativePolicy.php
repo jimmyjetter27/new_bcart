@@ -13,7 +13,7 @@ class CreativePolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return true;
     }
 
     /**
@@ -37,7 +37,7 @@ class CreativePolicy
      */
     public function update(User $user, Creative $creative): bool
     {
-        //
+        return true;
     }
 
     /**

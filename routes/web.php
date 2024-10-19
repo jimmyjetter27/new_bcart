@@ -1,8 +1,17 @@
 <?php
 
+use App\Filament\Resources\OrderResource;
+use App\Filament\Resources\UserResource;
 use App\Http\Controllers\AuthController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Route;
+
+
+Route::prefix('admin')->group(function () {
+//    Route::resource('users', UserResource::class);
+//    Route::resource('orders', OrderResource::class);
+});
+
 
 Route::get('/', function () {
     return 'Bcart Backend';

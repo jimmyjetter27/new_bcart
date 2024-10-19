@@ -3,15 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Parental\HasChildren;
-//use App\Notifications\VerifyEmail as VerifyEmailNotification;
+use Filament\Panel;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 {
     use HasFactory, Notifiable, HasChildren, HasApiTokens;
 
@@ -64,6 +65,25 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'creative_hire_status' => 'boolean',
         ];
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+//        return true;
+        return $this->isSuperAdmin() || $this->isAdmin();
+        return str_ends_with($this->email, '@yourdomain.com') && $this->hasVerifiedEmail();
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->profile_picture_url;
+    }
+
+    public function getNameAttribute(): string
+    {
+        $firstName = $this->first_name ?? 'First';
+        $lastName = $this->last_name ?? 'Last';
+        return "{$firstName} {$lastName}";
     }
 
     public function isAdmin(): bool

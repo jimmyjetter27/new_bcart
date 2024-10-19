@@ -13,7 +13,7 @@ class CreativeCategoryPolicy
      */
     public function viewAny(User $user): Response
     {
-
+        return true;
     }
 
     /**
