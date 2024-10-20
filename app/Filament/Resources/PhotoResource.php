@@ -32,7 +32,7 @@ class PhotoResource extends Resource
                 Forms\Components\TextInput::make('price')
                     ->numeric()
                     ->required(),
-                Forms\Components\FileUpload::make('image_url')
+                Forms\Components\FileUpload::make('image_url')->label('Image')
                 ->image()
                     ->disk('public')
                     ->directory('photos'),
@@ -46,7 +46,7 @@ class PhotoResource extends Resource
                 Tables\Columns\TextColumn::make('title')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('price')->sortable(),
                 Tables\Columns\ImageColumn::make('image_url')->label('Photo'),
-                Tables\Columns\IconColumn::make('is_approved'),
+                Tables\Columns\IconColumn::make('is_approved')->true(),
                 Tables\Columns\TextColumn::make('created_at')->label('Created')->dateTime(),
             ])
             ->filters([
