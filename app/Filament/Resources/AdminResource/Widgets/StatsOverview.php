@@ -14,6 +14,7 @@ class StatsOverview extends BaseWidget
         return [
             Stat::make('Total Users', User::count())
                 ->descriptionIcon('heroicon-m-users'),
+//                ->url('')
 //                ->url(route('filament.resources.users.index')), // Link to users page
 
             Stat::make('Total Orders', Order::count())

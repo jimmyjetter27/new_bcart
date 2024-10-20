@@ -19,11 +19,23 @@ class PhotoResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?int $navigationSort = 4;
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
+                Forms\Components\TextInput::make('title')
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\Textarea::make('description'),
+                Forms\Components\TextInput::make('price')
+                    ->numeric()
+                    ->required(),
+                Forms\Components\FileUpload::make('image_url')
+                ->image()
+                    ->disk('public')
+                    ->directory('photos'),
             ]);
     }
 
@@ -31,10 +43,15 @@ class PhotoResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('title')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('price')->sortable(),
+                Tables\Columns\ImageColumn::make('image_url')->label('Photo'),
+                Tables\Columns\IconColumn::make('is_approved'),
+                Tables\Columns\TextColumn::make('created_at')->label('Created')->dateTime(),
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('approved')
+                    ->query(fn ($query) => $query->where('is_approved', true)),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

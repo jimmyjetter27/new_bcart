@@ -3,9 +3,14 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Resources\AdminResource\Widgets\StatsOverview;
+use App\Filament\Resources\OrderResource;
+use App\Filament\Resources\PhotoResource;
+use App\Filament\Resources\UserResource;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -40,30 +45,12 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
 //                Widgets\FilamentInfoWidget::class,
-//                StatsOverview::class
+                StatsOverview::class
+            ])
+            ->userMenuItems([
+//                'logout' => MenuItem::make()->label('Go out')
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            //            ->resources([
-//                \App\Filament\Resources\UserResource::class,
-//                \App\Filament\Resources\OrderResource::class,
-//            ])
-//            ->sidebarGroups([
-//                [
-//                    'label' => 'Management',
-//                    'items' => [
-//                        [
-//                            'label' => 'Users',
-//                            'icon' => 'heroicon-o-users', // Optional icon
-//                            'url' => route('filament.resources.users.index'), // Link to users
-//                        ],
-//                        [
-//                            'label' => 'Orders',
-//                            'icon' => 'heroicon-o-arrow-trending-up', // Optional icon
-//                            'url' => route('filament.resources.orders.index'), // Link to orders
-//                        ],
-//                    ],
-//                ],
-//            ])
             ->navigation()
             ->middleware([
                 EncryptCookies::class,
@@ -79,6 +66,7 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->brandLogo('https://res.cloudinary.com/dztfnnvb4/image/upload/v1646563340/Bcart/BcartLogo.jpg')
             ->profile(Pages\Auth\EditProfile::class);
     }
 }

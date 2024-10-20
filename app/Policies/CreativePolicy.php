@@ -45,7 +45,7 @@ class CreativePolicy
      */
     public function delete(User $user, Creative $creative): bool
     {
-        //
+        return $user->isSuperAdmin() || $user->isAdmin();
     }
 
     /**

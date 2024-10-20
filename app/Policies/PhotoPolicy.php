@@ -21,7 +21,7 @@ class PhotoPolicy
      */
     public function view(User $user, Photo $photo): bool
     {
-        //
+        return true;
     }
 
     /**
@@ -42,6 +42,11 @@ class PhotoPolicy
     public function update(User $user, Photo $photo): Response
     {
         if ($user->isCreative() && $user->id === $photo->user_id)
+        {
+            return Response::allow();
+        }
+
+        if ($user->isSuperAdmin())
         {
             return Response::allow();
         }
