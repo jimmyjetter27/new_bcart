@@ -26,6 +26,13 @@ class PayStackService
     {
         try {
             $url = $this->baseUrl . $endpoint;
+
+//            dd([
+//                'url' => $url,
+//                'endpoint' => $endpoint,
+//                'method' => $method,
+//                'data' => $data
+//            ]);
             $response = Http::withToken($this->secretKey)
                 ->acceptJson()
                 ->$method($url, $data);

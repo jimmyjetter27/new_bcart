@@ -6,6 +6,7 @@ use App\Http\Middleware\ForceJson;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -82,6 +83,20 @@ Route::post('test-payment', [\App\Http\Controllers\TestController::class, 'testP
 Route::get('approve-photo/{photo}', [\App\Http\Controllers\TestController::class, 'approvePhoto']);
 
 Route::get('image-test', [\App\Http\Controllers\TestController::class, 'imageTest']);
+
+Route::post('/run-composer-install', function () {
+//    if (app()->environment('local')) {
+        exec('composer install', $output, $returnVar);
+
+        if ($returnVar !== 0) {
+            return response()->json(['message' => 'Composer install failed', 'output' => $output], 500);
+        }
+
+        return response()->json(['message' => 'Composer install executed successfully', 'output' => $output]);
+//    }
+
+//    return response()->json(['message' => 'This action is not allowed in this environment'], 403);
+});
 
 Route::fallback(function () {
     return response()->json([

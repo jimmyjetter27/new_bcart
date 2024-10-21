@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Contracts\ImageStorageInterface;
 use App\Filament\Resources\PhotoResource\Pages;
 use App\Filament\Resources\PhotoResource\RelationManagers;
 use App\Models\Photo;
@@ -32,10 +33,21 @@ class PhotoResource extends Resource
                 Forms\Components\TextInput::make('price')
                     ->numeric()
                     ->required(),
-                Forms\Components\FileUpload::make('image_url')->label('Image')
-                ->image()
-                    ->disk('public')
-                    ->directory('photos'),
+                Forms\Components\FileUpload::make('image')
+                    ->image()
+                    ->disk('public')  // This can still be used to store locally
+                    ->directory('photos')  // Or dynamically set based on the storage type
+                    ->saveUploadedFileUsing(function ($record, $file) {
+                        // Resolve the ImageStorageInterface based on the environment or preference
+                        $imageStorage = app(ImageStorageInterface::class);
+
+                        // Upload the file to Cloudinary or local storage
+                        $result = $imageStorage->upload($file, 'photos');
+
+                        // Save the image details in the database
+                        $record->image_url = $result['secure_url'];
+                        $record->image_public_id = $result['public_id'];
+                    }),
             ]);
     }
 
@@ -51,7 +63,7 @@ class PhotoResource extends Resource
             ])
             ->filters([
                 Tables\Filters\Filter::make('approved')
-                    ->query(fn ($query) => $query->where('is_approved', true)),
+                    ->query(fn($query) => $query->where('is_approved', true)),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

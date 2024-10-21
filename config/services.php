@@ -41,4 +41,9 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'paystack' => [
+        'url' => env('PAYSTACK_URL'),
+        'secret' => env('PAYSTACK_SECRET_KEY')
+    ]
+
 ];

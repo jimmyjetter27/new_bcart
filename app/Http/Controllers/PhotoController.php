@@ -140,9 +140,63 @@ class PhotoController extends Controller implements HasMiddleware
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdatePhotoRequest $request, Photo $photo)
+    public function update(UpdatePhotoRequest $request, Photo $photo, ImageStorageInterface $imageStorage)
     {
-        //
+        // Check if the user is authorized to update the photo
+        $policy = Gate::inspect('update', $photo);
+        if (!$policy->allowed()) {
+            return response()->json([
+                'success' => false,
+                'message' => $policy->message()
+            ], 403);
+        }
+
+        // Update the photo details (title, description, price)
+        $photo->title = $request->input('title', $photo->title);
+        $photo->description = $request->input('description', $photo->description);
+        $photo->price = $request->input('price', $photo->price);
+
+        // If a new image is provided, upload the new image and replace the old one
+        if ($request->hasFile('image')) {
+            // Delete the old image from storage if it exists
+            if ($photo->isStoredInCloudinary()) {
+                $imageStorage->delete($photo->image_public_id, true);
+            } else {
+                $imageStorage->delete($photo->image_public_id);
+            }
+
+            // Upload the new image
+            $uploadedFile = $request->file('image');
+            $result = $imageStorage->upload($uploadedFile, 'creative_uploads', null, true);
+
+            // Update the image details in the database
+            $photo->image_url = $result['secure_url'];
+            $photo->image_public_id = $result['public_id'];
+        }
+
+        // Save the updated photo record
+        $photo->save();
+
+        // Handle tags (optional)
+        if ($request->has('tags')) {
+            $tags = $request->input('tags');
+            $photo->tags()->detach();  // Detach old tags
+            foreach ($tags as $tag) {
+                $tagModel = PhotoTag::firstOrCreate(['name' => $tag]);
+                $photo->tags()->attach($tagModel->id);
+            }
+        }
+
+        // Handle category (optional)
+        if ($request->input('category')) {
+            $photo->photo_categories()->sync($request->input('category'));  // Sync new categories
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Photo updated successfully.',
+            'data' => new PhotoResource($photo),
+        ]);
     }
 
     /**
