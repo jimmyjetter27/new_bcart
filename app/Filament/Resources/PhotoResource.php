@@ -35,18 +35,22 @@ class PhotoResource extends Resource
                     ->required(),
                 Forms\Components\FileUpload::make('image')
                     ->image()
-                    ->disk('public')  // This can still be used to store locally
-                    ->directory('photos')  // Or dynamically set based on the storage type
-                    ->saveUploadedFileUsing(function ($record, $file) {
-                        // Resolve the ImageStorageInterface based on the environment or preference
+                    ->saveUploadedFileUsing(function ($record, $filePath) {
+                        // Resolve the ImageStorageInterface (Cloudinary or local storage)
                         $imageStorage = app(ImageStorageInterface::class);
 
+                        // Extract file extension from the file path using native PHP functions
+                        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+
                         // Upload the file to Cloudinary or local storage
-                        $result = $imageStorage->upload($file, 'photos');
+                        $result = $imageStorage->upload($filePath, 'photos', null);
 
                         // Save the image details in the database
                         $record->image_url = $result['secure_url'];
                         $record->image_public_id = $result['public_id'];
+
+                        // Return the file URL to be saved
+                        return $record->image_url;
                     }),
             ]);
     }

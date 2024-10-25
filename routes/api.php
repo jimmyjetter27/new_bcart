@@ -84,20 +84,9 @@ Route::get('approve-photo/{photo}', [\App\Http\Controllers\TestController::class
 
 Route::get('image-test', [\App\Http\Controllers\TestController::class, 'imageTest']);
 
-Route::post('/run-composer-install', function () {
-//    if (app()->environment('local')) {
-        exec('composer install', $output, $returnVar);
-
-        if ($returnVar !== 0) {
-            return response()->json(['message' => 'Composer install failed', 'output' => $output], 500);
-        }
-
-        return response()->json(['message' => 'Composer install executed successfully', 'output' => $output]);
-//    }
-
-//    return response()->json(['message' => 'This action is not allowed in this environment'], 403);
+Route::get('pass', function () {
+   return fake()->password(16);
 });
-
 Route::fallback(function () {
     return response()->json([
         'success' => false,
