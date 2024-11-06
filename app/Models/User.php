@@ -151,4 +151,19 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
             'creative_category_id'
         );
     }
+
+    public function delete()
+    {
+        // Delete related data
+        $this->pricing()->delete();
+        $this->hiring()->delete();
+        $this->paymentInfo()->delete();
+        $this->orders()->delete();
+        $this->photos()->delete();
+        $this->creative_categories()->detach(); // For many-to-many relationships, use detach()
+
+        // Call parent delete to delete the user record
+        return parent::delete();
+    }
+
 }

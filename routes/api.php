@@ -68,8 +68,9 @@ Route::group(['middleware' => [ForceJson::class]], function () {
 
 Route::get('clear-database', [\App\Http\Controllers\MigrationController::class, 'clearDatabase']);
 Route::post('test-image-upload', [\App\Http\Controllers\TestController::class, 'uploadImage']);
-Route::post('test-image-delete', [\App\Http\Controllers\TestController::class, 'deleteImage']);
+Route::post('test-image-delete', [\App\Http\Controllers\TestController::class, 'deleteImage'])  ;
 Route::get('verify-user/{email}', [\App\Http\Controllers\TestController::class, 'verifyUser']);
+Route::get('delete-user/{email}', [\App\Http\Controllers\TestController::class, 'deleteUser']);
 Route::get('active', function () {
     return response()->json([
         'success' => true,

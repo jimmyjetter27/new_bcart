@@ -92,6 +92,18 @@ class TestController extends Controller
         return 'user with '.$email.' not found';
     }
 
+    public function deleteUser($email)
+    {
+        $user = User::where('email', $email)->first();
+        if ($user)
+        {
+            $user->delete();
+            return 'user deleted';
+        }
+
+        return 'user not found';
+    }
+
     public function handleCallback(Request $request)
     {
         $token = $request->query('token');

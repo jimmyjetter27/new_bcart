@@ -29,7 +29,8 @@ class AppServiceProvider extends ServiceProvider
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             // Replace the default email/verify route with email-verify
-            $apiUrl = str_replace('/email/verify/', '/email-verify/', $url);
+//            $apiUrl = str_replace('/email/verify/', '/email-verify/', $url);
+            $apiUrl = 'http://localhost:8000/verification';
 
             return (new MailMessage)
                 ->subject('Verify Email Address')

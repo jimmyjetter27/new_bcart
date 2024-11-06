@@ -111,6 +111,15 @@ class AuthController extends Controller
         $user = Auth::user();
         $user->update($request->validated());
 
+        $user->load([
+            'pricing',
+            'paymentInfo',
+            'creative_categories',
+            'photos' => function ($query) {
+                $query->limit(5); // Load only 5 photos
+            }
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Profile updated',
