@@ -16,8 +16,7 @@ jobs:
       - name: Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: 141.193.23.10
+          server: tor201.arandomserver.com
           username: ${{ secrets.ftp_username }}
           password: ${{ secrets.ftp_password }}
-          remote-dir: /home/jididigi/bcart_backend
 
