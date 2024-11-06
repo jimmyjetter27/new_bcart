@@ -46,6 +46,7 @@ Route::group(['middleware' => [ForceJson::class]], function () {
         Route::post('suggest-upload', [\App\Http\Controllers\SuggestUploadController::class, 'store']);
     });
 
+    Route::get('search-user', []);
 
     Route::get('featured-creative', [\App\Http\Controllers\CreativeController::class, 'featuredCreative']);
     Route::get('featured-creatives', [\App\Http\Controllers\CreativeController::class, 'featuredCreatives']);
