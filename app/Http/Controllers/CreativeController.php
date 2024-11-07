@@ -125,17 +125,15 @@ class CreativeController extends Controller implements HasMiddleware
 
         if ($keyword) {
             $query->where(function ($query) use ($keyword) {
-                $query->where('first_name', 'ILIKE', "%$keyword%")
-                    ->orWhere('last_name', 'ILIKE', "%$keyword%")
-                    ->orWhere('username', 'ILIKE', "%$keyword%")
-                    ->orWhere('email', 'ILIKE', "%$keyword%")
-                    ->orWhere('phone_number', 'ILIKE', "%$keyword%")
-                    ->orWhere('ghana_post_gps', 'ILIKE', "%$keyword%")
-                    ->orWhere('city', 'ILIKE', "%$keyword%");
+                $query->where('first_name', 'like', "%$keyword%")
+                    ->orWhere('last_name', 'like', "%$keyword%")
+                    ->orWhere('username', 'like', "%$keyword%")
+                    ->orWhere('email', 'like', "%$keyword%")
+                    ->orWhere('phone_number', 'like', "%$keyword%")
+                    ->orWhere('ghana_post_gps', 'like', "%$keyword%")
+                    ->orWhere('city', 'like', "%$keyword%");
             });
         }
-
-
 
         // Get paginated results
         $users = $query->paginate(15);
