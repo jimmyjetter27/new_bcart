@@ -81,11 +81,11 @@ class PhotoController extends Controller implements HasMiddleware
                 $authenticated = $request->has('price') ? true : false;
 
 
-                Log::info('Uploading image with options:', [
-                    'authenticated' => $authenticated,
-                    'folder' => 'creative_uploads',
-                    'public_id' => $uploadedFile->getClientOriginalName(), // Example
-                ]);
+//                Log::info('Uploading image with options:', [
+//                    'authenticated' => $authenticated,
+//                    'folder' => 'creative_uploads',
+//                    'public_id' => $uploadedFile->getClientOriginalName(), // Example
+//                ]);
 
                 $result = $imageStorage->upload($uploadedFile, 'creative_uploads', null, $authenticated);
 

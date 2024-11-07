@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Services\ImageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Log;
 
 class PhotoResource extends JsonResource
 {
@@ -55,13 +56,19 @@ class PhotoResource extends JsonResource
 
         $imageHelper = app(ImageHelper::class);
 
+        Log::info(json_encode([
+            'has_purchased' => $hasPurchased,
+            'freeImage' => $freeImage
+        ]));
         if ($isUploader || $hasPurchased) {
 
+            Log::info('getting signedImageUrl');
             // Return the signed URL to the original image
             return $imageHelper->getSignedImageUrl($this->image_public_id);
         } else if ($freeImage) {
             return $this->image_url; // Pass the public image url if image is free
         } else {
+            Log::info('getting watermarked image');
             // Return the watermarked image URL
             return $imageHelper->applyCloudinaryWatermark($this->image_public_id);
         }
