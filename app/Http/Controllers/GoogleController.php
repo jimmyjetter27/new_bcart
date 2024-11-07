@@ -31,7 +31,7 @@ class GoogleController extends Controller
                     $finduser->update(['google_id' => $googleUser->id]);
                 }
                 // Generate token for existing user
-                $token = $finduser->createToken('auth-token')->plainTextToken;
+                $token = Str::after($finduser->createToken('auth-token')->plainTextToken, '|');
             } else {
                 // Handle case where name might be a single word
                 $name = $googleUser->getName();
