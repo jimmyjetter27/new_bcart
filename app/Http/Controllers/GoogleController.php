@@ -48,13 +48,13 @@ class GoogleController extends Controller
                     'type' => 'App\Models\RegularUser'
                 ]);
 
-                // Generate token for new user
-                $token = $newUser->createToken('auth-token')->plainTextToken;
+                // Remove the ID part from the token
+                $token = explode('|', $newUser->createToken('auth-token')->plainTextToken)[1];
             }
 
             // Redirect back to the frontend with the token (via query params or POST)
 //            return redirect()->to(env('FRONTEND_URL') . '/auth/callback?token=' . $token); // TODO Set frontend url for google
-            return env('FRONTEND_URL') .'?token=' . $token;
+            return redirect()->to(env('FRONTEND_URL') . '?token=' . $token);
 
         } catch (Exception $e) {
             Log::error('GoogleSignInError: ' . $e->getMessage());
