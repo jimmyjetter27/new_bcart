@@ -32,4 +32,17 @@ class StorePhotoRequest extends FormRequest
             'tags.*' => 'nullable|string|max:255'
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'images.*.required' => 'Please upload at least one image.',
+            'images.*.image' => 'Each file must be a valid image.',
+            'images.*.mimes' => 'Images must be of type: jpeg, png, jpg, gif, or svg.',
+            'images.*.max' => 'Each image must be less than 5MB in size.',
+            'category.*.exists' => 'The selected category is invalid.',
+            'tags.*.string' => 'Each tag should be a valid string.',
+            'tags.*.max' => 'Each tag should not exceed 255 characters.',
+        ];
+    }
 }

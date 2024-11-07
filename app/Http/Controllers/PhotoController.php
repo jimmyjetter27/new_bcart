@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -76,12 +77,16 @@ class PhotoController extends Controller implements HasMiddleware
             foreach ($uploadedFiles as $uploadedFile) {
                 // Upload the image and save it
 
-                // Check if image is free or not by looking out for the price key
-                if ($request->has('price')) {
-                    $authenticated = true;
-                } else {
-                    $authenticated = null;
-                }
+                // Check if image is free or not by looking out for the price key.
+                $authenticated = $request->has('price') ? true : false;
+
+
+                Log::info('Uploading image with options:', [
+                    'authenticated' => $authenticated,
+                    'folder' => 'creative_uploads',
+                    'public_id' => $uploadedFile->getClientOriginalName(), // Example
+                ]);
+
                 $result = $imageStorage->upload($uploadedFile, 'creative_uploads', null, $authenticated);
 
                 // Save the photo

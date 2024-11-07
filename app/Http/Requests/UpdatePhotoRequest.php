@@ -32,4 +32,20 @@ class UpdatePhotoRequest extends FormRequest
             'tags.*' => 'nullable|string|max:255'
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'image.image' => 'The file uploaded should be a valid image.',
+            'image.mimes' => 'The image must be a file of type: jpeg, png, jpg, gif, or svg.',
+            'image.max' => 'The image must be less than 5MB in size.',
+            'title.string' => 'The title should be a valid string.',
+            'title.max' => 'The title should not exceed 255 characters.',
+            'description.string' => 'The description should be a valid string.',
+            'price.numeric' => 'The price must be a number.',
+            'category.*.exists' => 'One of the selected categories is invalid.',
+            'tags.*.string' => 'Each tag should be a valid string.',
+            'tags.*.max' => 'Each tag should not exceed 255 characters.',
+        ];
+    }
 }

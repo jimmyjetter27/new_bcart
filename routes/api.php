@@ -49,20 +49,17 @@ Route::group(['middleware' => [ForceJson::class]], function () {
         Route::post('hire-creative', [HiringController::class, 'store']);
     });
 
-    Route::post('suggest-upload', [\App\Http\Controllers\SuggestionController::class, 'store']);
-
     Route::get('search-user', [\App\Http\Controllers\UserController::class, 'search']);
     Route::get('search-creative', [CreativeController::class, 'search']);
     Route::get('search-photo', [PhotoController::class, 'search']);
+    Route::get('related-images/{photo}', [PhotoController::class, 'relatedImages']);
 
     Route::get('featured-creative', [CreativeController::class, 'featuredCreative']);
     Route::get('featured-creatives', [CreativeController::class, 'featuredCreatives']);
-
     Route::get('featured-creative-categories', [CreativeCategoryController::class, 'featuredCreativeCategories']);
 
     Route::get('user-{user}-photos', [PhotoController::class, 'getUserPhotos']);
 
-    Route::get('related-images/{photo}', [PhotoController::class, 'relatedImages']);
 
     Route::apiResources([
         'creatives' => CreativeController::class,
@@ -70,6 +67,8 @@ Route::group(['middleware' => [ForceJson::class]], function () {
         'photo-categories' => PhotoCategoryController::class,
         'photos' => PhotoController::class
     ]);
+
+    Route::post('suggest-upload', [\App\Http\Controllers\SuggestionController::class, 'store']);
 
     Route::get('paystack-callback', []);
 
