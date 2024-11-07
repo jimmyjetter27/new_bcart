@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Filters\FilterByMinRate;
 use App\Filters\FiltersByFullName;
+use App\Filters\InsensitiveLikeFilter;
 use App\Http\Resources\UserResource;
 use App\Models\Creative;
 use App\Http\Controllers\Controller;
