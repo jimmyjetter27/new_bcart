@@ -8,6 +8,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleController extends Controller
@@ -49,7 +50,7 @@ class GoogleController extends Controller
                 ]);
 
                 // Remove the ID part from the token
-                $token = explode('|', $newUser->createToken('auth-token')->plainTextToken)[1];
+                $token = Str::after($newUser->createToken('auth-token')->plainTextToken, '|');
             }
 
             // Redirect back to the frontend with the token (via query params or POST)
