@@ -8,12 +8,9 @@ use App\Http\Controllers\HiringController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PhotoCategoryController;
 use App\Http\Controllers\PhotoController;
-use App\Http\Controllers\SuggestUploadController;
 use App\Http\Middleware\ForceJson;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Artisan;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -50,8 +47,9 @@ Route::group(['middleware' => [ForceJson::class]], function () {
 
         Route::post('buy-photos', [OrderController::class, 'buyPhotos']);
         Route::post('hire-creative', [HiringController::class, 'store']);
-        Route::post('suggest-upload', [SuggestUploadController::class, 'store']);
     });
+
+    Route::post('suggest-upload', [\App\Http\Controllers\SuggestionController::class, 'store']);
 
     Route::get('search-user', [\App\Http\Controllers\UserController::class, 'search']);
     Route::get('search-creative', [CreativeController::class, 'search']);

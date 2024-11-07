@@ -17,7 +17,6 @@ class SuggestionResource extends JsonResource
         return [
             'id' => $this->id,
             'suggestion' => $this->suggestion,
-            'suggester' => new UserResource($this->suggester)
         ];
     }
 }
