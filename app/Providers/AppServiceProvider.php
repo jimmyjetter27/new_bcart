@@ -27,16 +27,21 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
 
-        VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
-            // Replace the default email/verify route with email-verify
-//            $apiUrl = str_replace('/email/verify/', '/email-verify/', $url);
-//            $apiUrl = 'http://localhost:8000/verification';
-            $verification_link = env('FRONTEND_URL') . '/verification';
+        VerifyEmail::toMailUsing(function ($notifiable, string $url) {
+            // Extract the user id and hash from the generated verification URL
+            $parsedUrl = parse_url($url);
+            parse_str($parsedUrl['query'], $queryParams);
+
+            // Generate a frontend URL with the necessary parameters
+            $verificationLink = env('FRONTEND_URL') . '/verification?' . http_build_query([
+                    'id' => $queryParams['id'],
+                    'hash' => $queryParams['hash']
+                ]);
 
             return (new MailMessage)
                 ->subject('Verify Email Address')
                 ->line('Click the button below to verify your email address.')
-                ->action('Verify Email Address', $verification_link) // Use the modified API URL
+                ->action('Verify Email Address', $verificationLink)
                 ->line('If you did not create an account, no further action is required.');
         });
     }
