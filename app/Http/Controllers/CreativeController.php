@@ -156,10 +156,12 @@ class CreativeController extends Controller implements HasMiddleware
             }
         ]);
 
-        return [
-            'success' => true,
-            'message' => 'Search results fetched successfully.',
-            'data' => UserResource::collection($users)
-        ];
+//        return [
+//            'success' => true,
+//            'message' => 'Search results fetched successfully.',
+//            'data' => UserResource::collection($users)
+//        ];
+
+        return UserResource::collection($users);
     }
 }
