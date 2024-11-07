@@ -122,13 +122,7 @@ class CreativeController extends Controller implements HasMiddleware
         $users = QueryBuilder::for(User::class)
             ->where('type', Creative::class)
             ->allowedFilters([
-                AllowedFilter::custom('first_name', new InsensitiveLikeFilter),
-                AllowedFilter::custom('last_name', new InsensitiveLikeFilter),
-                AllowedFilter::custom('username', new InsensitiveLikeFilter),
-                AllowedFilter::custom('email', new InsensitiveLikeFilter),
-                AllowedFilter::custom('phone_number', new InsensitiveLikeFilter),
-                AllowedFilter::custom('ghana_post_gps', new InsensitiveLikeFilter),
-                AllowedFilter::custom('city', new InsensitiveLikeFilter),
+                AllowedFilter::custom('keyword', new InsensitiveLikeFilter), // Use 'keyword' filter
             ])
             ->paginate(15);
 
