@@ -319,8 +319,7 @@ class PhotoController extends Controller implements HasMiddleware
             ]);
         }
 
-        // Load any necessary relationships (e.g., user who uploaded the photo)
-        $photos->getCollection()->load('user');
+        $photos->getCollection()->load('creative');
 
         return response()->json([
             'success' => true,
@@ -346,6 +345,8 @@ class PhotoController extends Controller implements HasMiddleware
 
         // Get the user's photos with pagination
         $photos = Photo::where('user_id', $userId)->paginate($perPage);
+
+        $photos->getCollection()->load('creative');
 
         // Return the paginated photos
 //        return response()->json([
