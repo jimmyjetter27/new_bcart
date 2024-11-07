@@ -30,12 +30,13 @@ class AppServiceProvider extends ServiceProvider
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             // Replace the default email/verify route with email-verify
 //            $apiUrl = str_replace('/email/verify/', '/email-verify/', $url);
-            $apiUrl = 'http://localhost:8000/verification';
+//            $apiUrl = 'http://localhost:8000/verification';
+            $verification_link = env('FRONTEND_URL') . '/verification';
 
             return (new MailMessage)
                 ->subject('Verify Email Address')
                 ->line('Click the button below to verify your email address.')
-                ->action('Verify Email Address', $apiUrl) // Use the modified API URL
+                ->action('Verify Email Address', $verification_link) // Use the modified API URL
                 ->line('If you did not create an account, no further action is required.');
         });
     }
