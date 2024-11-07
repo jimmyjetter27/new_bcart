@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\ImageStorageInterface;
 use App\Http\Resources\PhotoResource;
+use App\Http\Resources\UserResource;
 use App\Models\Photo;
 use App\Http\Requests\StorePhotoRequest;
 use App\Http\Requests\UpdatePhotoRequest;
@@ -345,21 +346,29 @@ class PhotoController extends Controller implements HasMiddleware
         // Set up pagination parameters
         $perPage = $request->query('per_page', 10);
 
-        // Get the user's photos with pagination and is approved
+        // Get the user's approved photos with pagination
         $photos = Photo::where('user_id', $userId)
             ->where('is_approved', true)
             ->paginate($perPage);
 
-        $photos->getCollection()->load('creative');
+        // Transform photos with PhotoResource without repeating creative information
+        $photoData = PhotoResource::collection($photos->items())->resolve();
 
-        // Return the paginated photos
-//        return response()->json([
-//            'success' => true,
-//            'message' => 'User photos fetched successfully.',
-//            'data' => PhotoResource::collection($photos->items()),
-//
-//        ]);
-
-        return PhotoResource::collection($photos->items());
+        // Create a structured response with creative details at the top level
+        return response()->json([
+            'success' => true,
+            'message' => 'User photos fetched successfully.',
+            'creative' => new UserResource($user),
+            'photos' => [
+                'data' => $photoData,
+                'pagination' => [
+                    'total' => $photos->total(),
+                    'per_page' => $photos->perPage(),
+                    'current_page' => $photos->currentPage(),
+                    'last_page' => $photos->lastPage(),
+                ],
+            ],
+        ]);
     }
+
 }
