@@ -280,4 +280,42 @@ class PhotoController extends Controller implements HasMiddleware
             'data' => PhotoResource::collection($relatedImages),
         ]);
     }
+
+    public function search(Request $request)
+    {
+        $keyword = $request->query('keyword');
+        $query = Photo::query();
+
+        if ($keyword) {
+            $query->where(function ($query) use ($keyword) {
+                $query->where('title', 'like', "%$keyword%")
+                    ->orWhere('description', 'like', "%$keyword%")
+                    ->orWhere('slug', 'like', "%$keyword%")
+                    ->orWhere('price', 'like', "%$keyword%"); // Allows searching by price, if needed
+            });
+        }
+
+        // Optional: Filter only approved photos
+        $query->where('is_approved', true);
+
+        // Paginate the results
+        $photos = $query->paginate(15);
+
+        if ($photos->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'No photos found matching the criteria.',
+                'data' => []
+            ]);
+        }
+
+        // Load any necessary relationships (e.g., user who uploaded the photo)
+        $photos->getCollection()->load('user');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Search results fetched successfully.',
+            'data' => PhotoResource::collection($photos)
+        ]);
+    }
 }

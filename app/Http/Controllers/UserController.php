@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use App\Models\Admin;
+use App\Models\SuperAdmin;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -13,7 +15,8 @@ class UserController extends Controller
     {
         $keyword = $request->query('keyword');
 
-        $query = User::query();
+        $query = User::query()
+            ->whereNotIn('type', [Admin::class, SuperAdmin::class]);
 
         if ($keyword) {
             $query->where(function ($query) use ($keyword) {
