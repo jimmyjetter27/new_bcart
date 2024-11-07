@@ -319,13 +319,15 @@ class PhotoController extends Controller implements HasMiddleware
             ]);
         }
 
-        $photos->getCollection()->load('creative');
+        $photos->getCollection()->load('creative', 'tags');
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Search results fetched successfully.',
-            'data' => PhotoResource::collection($photos)
-        ]);
+//        return response()->json([
+//            'success' => true,
+//            'message' => 'Search results fetched successfully.',
+//            'data' => PhotoResource::collection($photos)
+//        ]);
+
+        return PhotoResource::collection($photos);
     }
 
     public function getUserPhotos(Request $request, $userId)
@@ -343,8 +345,10 @@ class PhotoController extends Controller implements HasMiddleware
         // Set up pagination parameters
         $perPage = $request->query('per_page', 10);
 
-        // Get the user's photos with pagination
-        $photos = Photo::where('user_id', $userId)->paginate($perPage);
+        // Get the user's photos with pagination and is approved
+        $photos = Photo::where('user_id', $userId)
+            ->where('is_approved', true)
+            ->paginate($perPage);
 
         $photos->getCollection()->load('creative');
 

@@ -35,6 +35,7 @@ class PhotoResource extends JsonResource
             'updated_at' => $this->updated_at,
             'creative' => new UserResource($this->whenLoaded('creative')),
             'photo_categories' => PhotoCategoryResource::collection($this->whenLoaded('photo_categories')),
+            'tags' => PhotoTagResource::collection($this->whenLoaded('tags')),
         ];
     }
 
