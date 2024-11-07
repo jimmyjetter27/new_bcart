@@ -137,6 +137,7 @@ class PhotoController extends Controller implements HasMiddleware
      */
     public function show(Photo $photo, ImageHelper $imageHelper)
     {
+        $photo->load('creative');
         return response()->json([
             'success' => true,
             'message' => 'Image found.',
