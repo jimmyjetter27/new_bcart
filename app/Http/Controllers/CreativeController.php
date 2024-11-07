@@ -118,25 +118,18 @@ class CreativeController extends Controller implements HasMiddleware
 
     public function search(Request $request)
     {
-        $keyword = $request->query('keyword');
-
-        // Use 'where' to ensure only users of type Creative are included
-        $query = User::query()->where('type', Creative::class);
-
-        if ($keyword) {
-            $query->where(function ($query) use ($keyword) {
-                $query->where('first_name', 'like', "%$keyword%")
-                    ->orWhere('last_name', 'like', "%$keyword%")
-                    ->orWhere('username', 'like', "%$keyword%")
-                    ->orWhere('email', 'like', "%$keyword%")
-                    ->orWhere('phone_number', 'like', "%$keyword%")
-                    ->orWhere('ghana_post_gps', 'like', "%$keyword%")
-                    ->orWhere('city', 'like', "%$keyword%");
-            });
-        }
-
-        // Get paginated results
-        $users = $query->paginate(15);
+        $users = QueryBuilder::for(User::class)
+            ->where('type', Creative::class)
+            ->allowedFilters([
+                AllowedFilter::custom('first_name', new InsensitiveLikeFilter),
+                AllowedFilter::custom('last_name', new InsensitiveLikeFilter),
+                AllowedFilter::custom('username', new InsensitiveLikeFilter),
+                AllowedFilter::custom('email', new InsensitiveLikeFilter),
+                AllowedFilter::custom('phone_number', new InsensitiveLikeFilter),
+                AllowedFilter::custom('ghana_post_gps', new InsensitiveLikeFilter),
+                AllowedFilter::custom('city', new InsensitiveLikeFilter),
+            ])
+            ->paginate(15);
 
         if ($users->isEmpty()) {
             return response()->json([
@@ -146,8 +139,7 @@ class CreativeController extends Controller implements HasMiddleware
             ]);
         }
 
-        // Load relationships on the paginated items
-        $users->getCollection()->load([
+        $users->load([
             'pricing',
             'paymentInfo',
             'creative_categories',
@@ -156,12 +148,10 @@ class CreativeController extends Controller implements HasMiddleware
             }
         ]);
 
-//        return [
-//            'success' => true,
-//            'message' => 'Search results fetched successfully.',
-//            'data' => UserResource::collection($users)
-//        ];
-
-        return UserResource::collection($users);
+        return response()->json([
+            'success' => true,
+            'message' => 'Search results fetched successfully.',
+            'data' => UserResource::collection($users)
+        ]);
     }
 }
