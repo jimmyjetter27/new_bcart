@@ -30,11 +30,11 @@ class CloudinaryStorage implements ImageStorageInterface
 //            'api_secret' => env('CLOUDINARY_API_SECRET'),
 //        ]);
 
-        Log::info(json_encode([
-            'publicId' => $publicId,
-            'folder' => $folder,
-            'authenticated' => $authenticated
-        ]));
+//        Log::info(json_encode([
+//            'publicId' => $publicId,
+//            'folder' => $folder,
+//            'authenticated' => $authenticated
+//        ]));
 
         // Generate a unique temporary file name
         $tempFilePath = tempnam(sys_get_temp_dir(), 'upload_');
@@ -62,6 +62,7 @@ class CloudinaryStorage implements ImageStorageInterface
         }
 
         $response = $this->cloudinary->uploadApi()->upload($tempFileWithExtension, $uploadOptions);
+        Log::info('Cloudinary upload response:', $response->getArrayCopy());
 
         // Delete the temporary file
         unlink($tempFileWithExtension);
