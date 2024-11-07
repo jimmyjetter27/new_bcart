@@ -1,7 +1,14 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CreativeCategoryController;
+use App\Http\Controllers\CreativeController;
 use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\HiringController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PhotoCategoryController;
+use App\Http\Controllers\PhotoController;
+use App\Http\Controllers\SuggestUploadController;
 use App\Http\Middleware\ForceJson;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -39,29 +46,31 @@ Route::group(['middleware' => [ForceJson::class]], function () {
         Route::put('update-password', [AuthController::class, 'updatePassword']);
         Route::put('update-avatar', [AuthController::class, 'updateAvatar']);
 
-        Route::put('approve-photo', [\App\Http\Controllers\PhotoController::class, 'approvePhoto']);
+        Route::put('approve-photo', [PhotoController::class, 'approvePhoto']);
 
-        Route::post('buy-photos', [\App\Http\Controllers\OrderController::class, 'buyPhotos']);
-        Route::post('hire-creative', [\App\Http\Controllers\HiringController::class, 'store']);
-        Route::post('suggest-upload', [\App\Http\Controllers\SuggestUploadController::class, 'store']);
+        Route::post('buy-photos', [OrderController::class, 'buyPhotos']);
+        Route::post('hire-creative', [HiringController::class, 'store']);
+        Route::post('suggest-upload', [SuggestUploadController::class, 'store']);
     });
 
     Route::get('search-user', [\App\Http\Controllers\UserController::class, 'search']);
-    Route::get('search-creative', [\App\Http\Controllers\CreativeController::class, 'search']);
-    Route::get('search-photo', [\App\Http\Controllers\PhotoController::class, 'search']);
+    Route::get('search-creative', [CreativeController::class, 'search']);
+    Route::get('search-photo', [PhotoController::class, 'search']);
 
-    Route::get('featured-creative', [\App\Http\Controllers\CreativeController::class, 'featuredCreative']);
-    Route::get('featured-creatives', [\App\Http\Controllers\CreativeController::class, 'featuredCreatives']);
+    Route::get('featured-creative', [CreativeController::class, 'featuredCreative']);
+    Route::get('featured-creatives', [CreativeController::class, 'featuredCreatives']);
 
-    Route::get('featured-creative-categories', [\App\Http\Controllers\CreativeCategoryController::class, 'featuredCreativeCategories']);
+    Route::get('featured-creative-categories', [CreativeCategoryController::class, 'featuredCreativeCategories']);
 
-    Route::get('related-images/{photo}', [\App\Http\Controllers\PhotoController::class, 'relatedImages']);
+    Route::get('user-{user}-photos', [PhotoController::class, 'getUserPhotos']);
+
+    Route::get('related-images/{photo}', [PhotoController::class, 'relatedImages']);
 
     Route::apiResources([
-        'creatives' => \App\Http\Controllers\CreativeController::class,
-        'creative-categories' => \App\Http\Controllers\CreativeCategoryController::class,
-        'photo-categories' => \App\Http\Controllers\PhotoCategoryController::class,
-        'photos' => \App\Http\Controllers\PhotoController::class
+        'creatives' => CreativeController::class,
+        'creative-categories' => CreativeCategoryController::class,
+        'photo-categories' => PhotoCategoryController::class,
+        'photos' => PhotoController::class
     ]);
 
     Route::get('paystack-callback', []);
@@ -89,7 +98,7 @@ Route::get('approve-photo/{photo}', [\App\Http\Controllers\TestController::class
 Route::get('image-test', [\App\Http\Controllers\TestController::class, 'imageTest']);
 
 Route::get('pass', function () {
-   return fake()->password(16);
+   return env('FRONTEND_URL');
 });
 Route::fallback(function () {
     return response()->json([

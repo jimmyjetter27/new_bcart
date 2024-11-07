@@ -8,6 +8,7 @@ use App\Models\Photo;
 use App\Http\Requests\StorePhotoRequest;
 use App\Http\Requests\UpdatePhotoRequest;
 use App\Models\PhotoTag;
+use App\Models\User;
 use App\Services\ImageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -291,7 +292,16 @@ class PhotoController extends Controller implements HasMiddleware
                 $query->where('title', 'like', "%$keyword%")
                     ->orWhere('description', 'like', "%$keyword%")
                     ->orWhere('slug', 'like', "%$keyword%")
-                    ->orWhere('price', 'like', "%$keyword%"); // Allows searching by price, if needed
+                    ->orWhere('price', 'like', "%$keyword%"); // Allows searching by price
+
+                // Search in tags
+                $query->orWhereHas('tags', function ($tagQuery) use ($keyword) {
+                    $tagQuery->where('name', 'like', "%$keyword%");
+                });
+
+                $query->orWhereHas('photo_categories', function ($categoryQuery) use ($keyword) {
+                    $categoryQuery->where('photo_category', 'like', "%$keyword%");
+                });
             });
         }
 
@@ -317,5 +327,34 @@ class PhotoController extends Controller implements HasMiddleware
             'message' => 'Search results fetched successfully.',
             'data' => PhotoResource::collection($photos)
         ]);
+    }
+
+    public function getUserPhotos(Request $request, $userId)
+    {
+        // Validate if the user exists
+        $user = User::find($userId);
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found.'
+            ], 404);
+        }
+
+        // Set up pagination parameters
+        $perPage = $request->query('per_page', 10);
+
+        // Get the user's photos with pagination
+        $photos = Photo::where('user_id', $userId)->paginate($perPage);
+
+        // Return the paginated photos
+//        return response()->json([
+//            'success' => true,
+//            'message' => 'User photos fetched successfully.',
+//            'data' => PhotoResource::collection($photos->items()),
+//
+//        ]);
+
+        return PhotoResource::collection($photos->items());
     }
 }

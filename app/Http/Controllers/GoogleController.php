@@ -53,7 +53,8 @@ class GoogleController extends Controller
             }
 
             // Redirect back to the frontend with the token (via query params or POST)
-            return redirect()->to(env('FRONTEND_URL') . '/auth/callback?token=' . $token); // TODO Set frontend url for google
+//            return redirect()->to(env('FRONTEND_URL') . '/auth/callback?token=' . $token); // TODO Set frontend url for google
+            return env('FRONTEND_URL') .'?token=' . $token;
 
         } catch (Exception $e) {
             Log::error('GoogleSignInError: ' . $e->getMessage());
