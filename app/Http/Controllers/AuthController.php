@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
@@ -313,6 +314,15 @@ class AuthController extends Controller
 
     public function verifyEmail(EmailVerificationRequest $request)
     {
+        $user = $request->user();
+
+        if ($user->email_verified_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email already verified'
+            ]);
+        }
+
         $request->fulfill();
 
         return response()->json([
@@ -320,7 +330,6 @@ class AuthController extends Controller
             'message' => 'Email verified successfully'
         ]);
     }
-
 
     public function resendVerificationEmail(Request $request)
     {
