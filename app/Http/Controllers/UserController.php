@@ -51,10 +51,10 @@ class UserController extends Controller
             }
         ]);
 
-        return response()->json([
+        return [
             'success' => true,
             'message' => 'Search results fetched successfully.',
             'data' => UserResource::collection($users)
-        ]);
+        ];
     }
 }
