@@ -73,7 +73,7 @@ Route::group(['middleware' => [ForceJson::class]], function () {
 
     Route::post('suggest-upload', [\App\Http\Controllers\SuggestionController::class, 'store']);
 
-    Route::get('paystack-callback', []);
+    Route::get('paystack-callback', [\App\Http\Controllers\TransactionController::class, 'paystackCallback']);
 
 });
 

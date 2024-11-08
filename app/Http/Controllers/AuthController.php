@@ -133,23 +133,31 @@ class AuthController extends Controller
         DB::beginTransaction();
 
         try {
-            $creative = Auth::user();
-            $creative->phone_number = $request->input('phone_number');
-            $creative->ghana_post_gps = $request->input('ghana_post_gps');
-            $creative->city = $request->input('city', 'Accra');
-            $creative->physical_address = $request->input('physical_address');
-            $creative->description = $request->input('description');
-            $creative->creative_hire_status = $request->input('creative_hire_status');
-            $creative->creative_status = $creative->creative_hire_status === true ? 'Pending Verification' : $creative->creative_status;
-            $creative->type = 'App\Models\Creative';
-            $creative->save();
+            $user = Auth::user();
+
+            $isCreative = $request->input('creative_hire_status');
+            $user->type = $isCreative ? 'App\Models\Creative' : 'App\Models\RegularUser';
+
+            $user->phone_number = $request->input('phone_number');
+            $user->ghana_post_gps = $request->input('ghana_post_gps');
+            $user->city = $request->input('city', 'Accra');
+            $user->physical_address = $request->input('physical_address');
+            $user->description = $request->input('description');
+            $user->creative_hire_status = $request->input('creative_hire_status');
+//            $user->creative_status = $user->creative_hire_status === true ? 'Pending Verification' : $user->creative_status;
+            $user->type = 'App\Models\Creative';
+
+            if ($user->type === 'App\Models\Creative') {
+                $user->creative_status = $user->creative_hire_status ? 'Pending Verification' : $user->creative_status;
+            }
+            $user->save();
 
 
             // Step 3: Create or Update the Pricing Details
             if ($request->has('pricing')) {
                 // Check if the pricing already exists, and update or create a new one
                 $pricing = Pricing::updateOrCreate(
-                    ['creative_id' => $creative->id],
+                    ['creative_id' => $user->id],
                     [
                         'hourly_rate' => $request->input('pricing.hourly_rate'),
                         'daily_rate' => $request->input('pricing.daily_rate'),
@@ -168,7 +176,7 @@ class AuthController extends Controller
             // Step 4: Store or Update Payment Information9
             if ($request->has('payment_details')) {
                 PaymentInformation::updateOrCreate(
-                    ['user_id' => $creative->id],  // Match on user_id
+                    ['user_id' => $user->id],  // Match on user_id
                     [
                         'bank_name' => $request->input('payment_details.bank_name'),
                         'bank_branch' => $request->input('payment_details.bank_branch'),
@@ -176,23 +184,24 @@ class AuthController extends Controller
                         'bank_acc_num' => $request->input('payment_details.bank_acc_num'),
                         'momo_acc_name' => $request->input('payment_details.momo_acc_name'),
                         'momo_acc_number' => $request->input('payment_details.momo_acc_number'),
+                        'momo_network' => $request->input('payment_details.momo_network'),
                         'preferred_payment_account' => $request->input('payment_details.preferred_payment_account', 'bank_account'),
                     ]
                 );
             }
 
             if ($request->has('creative_categories')) {
-                $creative->creative_categories()->sync($request->creative_categories);
+                $user->creative_categories()->sync($request->creative_categories);
             }
 
             DB::commit();
 
-            $creative->load('pricing', 'paymentInfo', 'hiring', 'creative_categories');
+            $user->load('pricing', 'paymentInfo', 'hiring', 'creative_categories');
 
             return response()->json([
                 'success' => true,
                 'message' => 'Profile updated',
-                'data' => new UserResource($creative)
+                'data' => new UserResource($user)
             ]);
 
         } catch (\Exception $e) {

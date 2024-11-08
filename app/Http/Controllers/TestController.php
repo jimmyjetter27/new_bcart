@@ -71,10 +71,10 @@ class TestController extends Controller
         $payload = [
             'email' => 'jimmyjetter27@gmail.com',
             'amount' => $request->amount,
-            'mobile_money' => ['phone' => '0548984119', 'provider' => 'mtn'],
+            'mobile_money' => ['phone' => '0551234987', 'provider' => 'mtn'],
             'currency' => 'GHS'
         ];
-        return $service->chargeWithMobileMoney($payload);
+        return $service->charge($payload);
     }
 
     public function verifyUser($email)
