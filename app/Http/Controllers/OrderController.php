@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use App\Services\PayStackService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class OrderController extends Controller
@@ -139,7 +140,6 @@ class OrderController extends Controller
         // Fetch selected photos
         $photos = Photo::whereIn('id', $photoIds)->get();
 
-        // Check if the pricing table is populated
         if ($photos->isEmpty() || $photos->contains(fn($photo) => is_null($photo->price))) {
             return response()->json([
                 'success' => false,
@@ -150,7 +150,6 @@ class OrderController extends Controller
         // Calculate total price
         $totalPrice = $photos->sum('price');
 
-        // Fetch the user's preferred payment method
         $paymentInfo = $user->paymentInfo;
         if (!$paymentInfo || !$paymentInfo->preferred_payment_account) {
             return response()->json([
@@ -161,46 +160,53 @@ class OrderController extends Controller
 
         $preferredPaymentMethod = $paymentInfo->preferred_payment_account;
 
-        // Create Order
-        $order = Order::create([
-            'customer_id' => $user->id,
-            'order_number' => Str::uuid(),
-            'total_price' => $totalPrice,
-            'transaction_status' => 'pending'
-        ]);
+        // Create Order with transaction
+        DB::beginTransaction();
+        try {
+            $order = Order::create([
+                'customer_id' => $user->id,
+                'order_number' => Str::uuid(),
+                'total_price' => $totalPrice,
+                'transaction_status' => 'pending'
+            ]);
 
-        // Attach photos to the order (through polymorphic relation)
-        foreach ($photos as $photo) {
-            $order->orderable()->associate($photo);
+            // Attach multiple photos to the order using a pivot or relation
+            foreach ($photos as $photo) {
+                $order->orderable()->associate($photo);
+            }
+
+            $transactionResult = $preferredPaymentMethod === 'bank_account'
+                ? $paymentService->chargeWithCard()
+                : $paymentService->chargeWithMobileMoney();
+
+            $transaction = Transaction::create([
+                'order_id' => $order->id,
+                'transaction_id' => $transactionResult['transaction_id'],
+                'payment_method' => $preferredPaymentMethod,
+                'amount' => $totalPrice,
+                'status' => $transactionResult['status'],
+                'transaction_date' => now(),
+            ]);
+
+            $order->update([
+                'transaction_status' => $transaction->status === 'completed' ? 'completed' : 'failed'
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Photos purchased successfully.',
+                'order' => $order
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaction failed. Please try again later.',
+            ], 500);
         }
-
-        // Process the payment using Paystack (using preferred payment method)
-        if ($preferredPaymentMethod === 'bank_account') {
-            $transactionResult = $paymentService->chargeWithCard();
-        } else {
-            $transactionResult = $paymentService->chargeWithMobileMoney();
-        }
-
-        // Create transaction record
-        $transaction = Transaction::create([
-            'order_id' => $order->id,
-            'transaction_id' => $transactionResult['transaction_id'],
-            'payment_method' => $preferredPaymentMethod,
-            'amount' => $totalPrice,
-            'status' => $transactionResult['status'],
-            'transaction_date' => now(),
-        ]);
-
-        // Update order status based on the transaction result
-        $order->update([
-            'transaction_status' => $transaction->status === 'completed' ? 'completed' : 'failed'
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Photos purchased successfully.',
-            'order' => $order
-        ]);
     }
 
 

@@ -46,6 +46,9 @@ Route::group(['middleware' => [ForceJson::class]], function () {
         Route::put('approve-photo', [PhotoController::class, 'approvePhoto']);
 
         Route::post('buy-photos', [OrderController::class, 'buyPhotos']);
+        Route::get('user-purchased-photos', [PhotoController::class, 'listPurchasedPhotos']);
+        Route::get('download-photo/{photo}', [PhotoController::class, 'downloadPhoto']);
+
         Route::post('hire-creative', [HiringController::class, 'store']);
     });
 

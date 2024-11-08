@@ -14,6 +14,7 @@ use App\Services\ImageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -378,5 +379,58 @@ class PhotoController extends Controller implements HasMiddleware
             ],
         ]);
     }
+
+    public function listPurchasedPhotos()
+    {
+        $user = Auth::user();
+
+        // Retrieve all photos associated with completed orders
+        $photos = Photo::whereHas('orders', function ($query) use ($user) {
+            $query->where('customer_id', $user->id)
+                ->where('transaction_status', 'completed');
+        })->paginate();
+
+        return PhotoResource::collection($photos);
+//        return response()->json([
+//            'success' => true,
+//            'message' => 'Purchased photos retrieved successfully.',
+//            'data' => PhotoResource::collection($photos)
+//        ]);
+    }
+
+    public function downloadPhoto(Photo $photo)
+    {
+        $user = Auth::user();
+
+        // Check if the image is free
+        if ($photo->freeImage()) {
+            return $this->downloadImage($photo);
+        }
+
+        // Check if the user is the uploader or has purchased the image
+        if ($user && ($user->id === $photo->user_id || $photo->hasPurchasedPhoto($user->id))) {
+            return $this->downloadImage($photo);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'You do not have permission to download this image.',
+        ], 403);
+    }
+
+    private function downloadImage(Photo $photo)
+    {
+        // Retrieve the original image URL, for example from Cloudinary or local storage
+        $imageUrl = $photo->image_url;
+
+        // Check if the image URL is from a secure source and process accordingly
+        return response()->json([
+            'success' => true,
+            'message' => 'Image ready for download.',
+            'image_url' => $imageUrl,
+        ]);
+    }
+
+
 
 }

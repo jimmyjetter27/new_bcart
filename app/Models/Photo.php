@@ -28,6 +28,10 @@ class Photo extends Model
         return !str_contains($this->image_public_id, '.');
     }
 
+    public function orders()
+    {
+        return $this->morphToMany(Order::class, 'orderable');
+    }
 
     public function hasPurchasedPhoto($userId)
     {
