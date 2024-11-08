@@ -60,17 +60,13 @@ class PhotoResource extends JsonResource
             'has_purchased' => $hasPurchased,
             'freeImage' => $freeImage
         ]));
-        if ($isUploader || $hasPurchased) {
 
-            Log::info('getting signedImageUrl');
-            // Return the signed URL to the original image
-            return $imageHelper->getSignedImageUrl($this->image_public_id);
-        } else if ($freeImage) {
-            return $this->image_url; // Pass the public image url if image is free
+        if ($freeImage) {
+            return $this->image_url;
+        } elseif ($isUploader || $hasPurchased) {
+            return $imageHelper->getSignedImageUrl($this->image_public_id); // Signed URL for owner/purchased
         } else {
-            Log::info('getting watermarked image');
-            // Return the watermarked image URL
-            return $imageHelper->applyCloudinaryWatermark($this->image_public_id);
+            return $imageHelper->applyCloudinaryWatermark($this->image_public_id); // Watermarked for others
         }
     }
 

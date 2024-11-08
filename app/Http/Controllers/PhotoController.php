@@ -222,7 +222,8 @@ class PhotoController extends Controller implements HasMiddleware
 
         // Delete the image from Cloudinary (or any other storage)
         if ($photo->isStoredInCloudinary()) {
-            $imageStorage->delete('creative_uploads/' . $photo->image_public_id, true);
+            // Pass only the public_id without folder prefix, and adjust authentication flag if necessary
+            $imageStorage->delete($photo->image_public_id, false);
         }
 
         // Detach categories and tags before deleting the photo

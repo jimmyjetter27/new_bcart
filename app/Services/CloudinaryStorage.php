@@ -62,7 +62,7 @@ class CloudinaryStorage implements ImageStorageInterface
         }
 
         $response = $this->cloudinary->uploadApi()->upload($tempFileWithExtension, $uploadOptions);
-        Log::info('Cloudinary upload response:', $response->getArrayCopy());
+//        Log::info('Cloudinary upload response:', $response->getArrayCopy());
 
         // Delete the temporary file
         unlink($tempFileWithExtension);
