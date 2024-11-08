@@ -44,7 +44,8 @@ class TestController extends Controller
     {
 //        dd('wok');
 //        if ($imageStorage->delete('avatars/GIcwkNKMKOSBgiMs965FHNcDRReUIzhXIQPgIGhv.jpg'))  {
-        return $imageStorage->delete('creative_uploads/cxjlf0skbpefnorp8gxo', true);    // returns 1
+//        return $imageStorage->delete('creative_uploads/cxjlf0skbpefnorp8gxo', true);    // returns 1
+        return $imageStorage->delete('creative_uploads/mxyrbxd7fy34bga30z4l', false);    // returns 1
         if ($imageStorage->delete('creative_uploads/f1w6sb9ii5qpec2myl3r')) {
             return 'image deleted';
         }
