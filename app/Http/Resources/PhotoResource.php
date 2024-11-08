@@ -47,7 +47,6 @@ class PhotoResource extends JsonResource
      */
     private function getImageUrl()
     {
-        return $this->image_url;
         $user = auth('sanctum')->user();
         $isUploader = $user && intval($user->id) === intval($this->user_id);
 
