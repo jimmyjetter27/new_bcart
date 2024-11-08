@@ -11,10 +11,11 @@ class Order extends Model
 
     use HasFactory;
 
-    public function orderable(): MorphTo
+    public function orderables()
     {
-        return $this->morphTo();
+        return $this->morphToMany(Photo::class, 'orderable');
     }
+
 
     public function photos()
     {
