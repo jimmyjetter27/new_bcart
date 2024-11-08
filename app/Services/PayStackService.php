@@ -47,8 +47,9 @@ class PayStackService
 
             // Handle error responses
             if (!$response->successful()) {
-                Log::error('Paystack Error: ' . $response->body());
-                return null;
+//                Log::error('Paystack Error: ' . $response->body());
+//                return $response['message'] ?? null;
+                return $response->json();
             }
 
             return $response->json();
@@ -73,6 +74,14 @@ class PayStackService
     public function verifyPayment(string $reference)
     {
         return $this->sendRequest([], "transaction/verify/{$reference}", 'get');
+    }
+
+    public function charge(array $data)
+    {
+        if (isset($data['amount'])) {
+            $data['amount'] = $this->convertToPesewas($data['amount']);
+        }
+        return $this->sendRequest($data, 'charge');
     }
 
     public function chargeWithMobileMoney(array $data)

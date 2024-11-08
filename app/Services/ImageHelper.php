@@ -71,7 +71,7 @@ class ImageHelper
         // Define overlay positions with smaller offsets to fit within image boundaries
         $positions = [
             ['x' => -350, 'y' => -350], ['x' => 0, 'y' => -350], ['x' => 350, 'y' => -350],
-            ['x' => -300, 'y' => 0],    ['x' => 0, 'y' => 0],    ['x' => 300, 'y' => 0],
+//            ['x' => -300, 'y' => 0],    ['x' => 0, 'y' => 0],    ['x' => 300, 'y' => 0],
             ['x' => -350, 'y' => 350],  ['x' => 0, 'y' => 350],  ['x' => 350, 'y' => 350]
         ];
 
