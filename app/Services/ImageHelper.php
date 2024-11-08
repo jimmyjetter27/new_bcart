@@ -20,6 +20,37 @@ class ImageHelper
         ]);
     }
 
+//    public function applyCloudinaryWatermark(string $publicId, string $watermarkPublicId = null)
+//    {
+//        // Define the default watermark if none is provided
+//        $watermarkPublicId = $watermarkPublicId ?? 'Bcart/hppz3vr28ml0pzkr5uov';
+//
+//        // Replace '/' with ':' in the watermark public_id for the overlay
+//        $overlayPublicId = str_replace('/', ':', $watermarkPublicId);
+//
+//        // Ensure base image public_id includes the folder
+//        $baseImagePublicId = 'creative_uploads/' . $publicId;
+//
+//        $imageUrl = $this->cloudinary->image($baseImagePublicId)
+//            ->deliveryType('authenticated')
+//            ->version($this->getImageVersion($baseImagePublicId))
+//            ->signUrl()
+////            ->expiresAt(time() + 3600)
+//            ->addTransformation([
+//                'overlay' => $overlayPublicId,
+//                'gravity' => 'center',
+//                'x'       => 10,
+//                'y'       => 10,
+//                'opacity' => 50,
+//                'width'   => 0.3,
+//                'flags'   => 'relative',
+//                'crop'    => 'scale',
+//            ])
+//            ->toUrl();
+//
+//        return $imageUrl;
+//    }
+
     public function applyCloudinaryWatermark(string $publicId, string $watermarkPublicId = null)
     {
         // Define the default watermark if none is provided
@@ -31,25 +62,40 @@ class ImageHelper
         // Ensure base image public_id includes the folder
         $baseImagePublicId = 'creative_uploads/' . $publicId;
 
-        $imageUrl = $this->cloudinary->image($baseImagePublicId)
+        // Start with the base image
+        $image = $this->cloudinary->image($baseImagePublicId)
             ->deliveryType('authenticated')
             ->version($this->getImageVersion($baseImagePublicId))
-            ->signUrl()
-//            ->expiresAt(time() + 3600)
-            ->addTransformation([
+            ->signUrl();
+
+        // Define overlay positions with smaller offsets to fit within image boundaries
+        $positions = [
+            ['x' => -350, 'y' => -350], ['x' => 0, 'y' => -350], ['x' => 350, 'y' => -350],
+            ['x' => -300, 'y' => 0],    ['x' => 0, 'y' => 0],    ['x' => 300, 'y' => 0],
+            ['x' => -350, 'y' => 350],  ['x' => 0, 'y' => 350],  ['x' => 350, 'y' => 350]
+        ];
+
+        // Apply each overlay with diagonal rotation, adjusted size, and offset
+        foreach ($positions as $position) {
+            $image->addTransformation([
                 'overlay' => $overlayPublicId,
                 'gravity' => 'center',
-                'x'       => 10,
-                'y'       => 10,
-                'opacity' => 50,
-                'width'   => 0.3,
+                'x'       => $position['x'],
+                'y'       => $position['y'],
+                'opacity' => 30,       // Adjust for subtlety
+                'angle'   => 45,       // Diagonal rotation
+                'width'   => 0.10,     // Smaller size for logos
                 'flags'   => 'relative',
                 'crop'    => 'scale',
-            ])
-            ->toUrl();
+            ]);
+        }
+
+        // Generate and return the URL
+        $imageUrl = $image->toUrl();
 
         return $imageUrl;
     }
+
 
 //    public function applyCloudinaryWatermark(string $publicId, string $watermarkPublicId = null)
 //    {
