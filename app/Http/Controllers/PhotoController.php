@@ -263,26 +263,27 @@ class PhotoController extends Controller implements HasMiddleware
 
     public function relatedImages(Photo $photo)
     {
-        // First, get the categories of the current photo
+        // First, get the categories and tags of the current photo
         $photoCategories = $photo->photo_categories()->pluck('photo_category_id');
-
-        // Get the tags of the current photo
         $photoTags = $photo->tags()->pluck('photo_tag_id');
 
-        // Query to get photos that are in the same categories, excluding the current photo
-        $relatedImagesQuery = Photo::whereHas('photo_categories', function ($query) use ($photoCategories) {
-            $query->whereIn('photo_category_id', $photoCategories);
-        })
-            ->where('id', '!=', $photo->id) // Exclude the current photo by checking 'id !='
-            ->where('is_approved', true); // Ensure the photo is approved
+        // Query to get photos that are in the same categories or have similar tags, excluding the current photo
+        $relatedImagesQuery = Photo::where('id', '!=', $photo->id) // Exclude the current photo
+        ->where('is_approved', true)
+            ->where(function ($query) use ($photoCategories, $photoTags) {
+                $query->whereHas('photo_categories', function ($query) use ($photoCategories) {
+                    $query->whereIn('photo_category_id', $photoCategories);
+                });
 
-        // If the current photo has tags, refine the query by matching the tags
-        if ($photoTags->isNotEmpty()) {
-            $relatedImagesQuery->orWhereHas('tags', function ($query) use ($photoTags) {
-                $query->whereIn('photo_tag_id', $photoTags);
+                // Add an additional condition for tags only if tags are present
+                if ($photoTags->isNotEmpty()) {
+                    $query->orWhereHas('tags', function ($query) use ($photoTags) {
+                        $query->whereIn('photo_tag_id', $photoTags);
+                    });
+                }
             });
-        }
 
+        // Fetch the limited results
         $relatedImages = $relatedImagesQuery->limit(10)->get();
 
         return response()->json([
