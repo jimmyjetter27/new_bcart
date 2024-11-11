@@ -56,10 +56,10 @@ class PhotoResource extends JsonResource
 
         $imageHelper = app(ImageHelper::class);
 
-        Log::info(json_encode([
-            'has_purchased' => $hasPurchased,
-            'freeImage' => $freeImage
-        ]));
+//        Log::info(json_encode([
+//            'has_purchased' => $hasPurchased,
+//            'freeImage' => $freeImage
+//        ]));
 
         if ($freeImage) {
             return $this->image_url;
