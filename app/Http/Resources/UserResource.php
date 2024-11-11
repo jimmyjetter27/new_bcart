@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Photo;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -35,7 +36,10 @@ class UserResource extends JsonResource
             'payment_information' => new PaymentInformationResource($this->whenLoaded('paymentInfo')),
             'creative_categories' => CreativeCategoryResource::collection($this->whenLoaded('creative_categories')),
             'hiring_info' => new HiringResource($this->whenLoaded('hiring')),
-            'photos' => PhotoResource::collection($this->whenLoaded('photos'))
+            'photos' => PhotoResource::collection($this->whenLoaded('photos')),
+            'permissions' => [
+                'can_upload' => auth()->can('create', Photo::class)
+            ]
         ];
     }
 }

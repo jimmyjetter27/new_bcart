@@ -59,6 +59,11 @@ class PayStackService
         }
     }
 
+    public function listBanks()
+    {
+        return $this->sendRequest(['country' => 'ghana'], 'bank', 'get');
+    }
+
     public function initializePayment(array $data, $method = 'card')
     {
         // Convert amount from GHS to pesewas

@@ -73,6 +73,7 @@ Route::group(['middleware' => [ForceJson::class]], function () {
 
     Route::post('suggest-upload', [\App\Http\Controllers\SuggestionController::class, 'store']);
 
+    Route::get('paystack-supported-banks', [\App\Http\Controllers\PaystackController::class, 'listBanks']);
     Route::get('paystack-callback', [\App\Http\Controllers\TransactionController::class, 'paystackCallback']);
 
 });
