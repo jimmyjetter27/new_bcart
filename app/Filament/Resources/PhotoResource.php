@@ -10,6 +10,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -61,9 +62,11 @@ class PhotoResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('title')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('price')->sortable(),
-                Tables\Columns\ImageColumn::make('image_url')->label('Photo'),
+                Tables\Columns\ImageColumn::make('image_url')
+                    ->label('Photo')
+                    ->url(fn($record) => $record->image_url, true) // Opens in a new tab
+                    ->openUrlInNewTab(),
                 Tables\Columns\IconColumn::make('is_approved')->true(),
-                Tables\Columns\TextColumn::make('created_at')->label('Created')->dateTime(),
             ])
             ->filters([
                 Tables\Filters\Filter::make('approved')
@@ -71,6 +74,32 @@ class PhotoResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Action::make('approve')
+                    ->label(fn($record) => $record->is_approved ? 'Unapprove' : 'Approve')
+                    ->icon(fn($record) => $record->is_approved ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->action(fn($record) => $record->update(['is_approved' => !$record->is_approved]))
+                    ->requiresConfirmation()
+                    ->modalHeading(fn($record) => $record->is_approved ? 'Unapprove Photo' : 'Approve Photo')
+                    ->modalSubheading('Are you sure you want to change the approval status of this photo?')
+                    ->color(fn($record) => $record->is_approved ? 'danger' : 'success'),
+
+                Action::make('viewDetails')
+                    ->label('View Details')
+                    ->icon('heroicon-o-eye')
+                    ->action(fn () => null) // Set to do nothing on submit, making it view-only
+                    ->modalHeading('Photo Details')
+                    ->modalActions([]) // Sets an empty array for modal actions to remove buttons
+                    ->extraAttributes([
+                        'style' => 'text-align: left;', // Optional: to ensure content aligns properly
+                    ])
+                    ->modalContent(function ($record) {
+                        return view('filament.photo-details', [
+                            'photo' => $record,
+                            'creative' => $record->creative,
+                            'categories' => $record->photo_categories,
+                            'created_at' => $record->created_at->format('F j, Y'),
+                        ]);
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
