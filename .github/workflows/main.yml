@@ -13,18 +13,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Copy Public Folder Contents to Root Public HTML Directory
-        run: |
-          mkdir -p temp_deploy/public_html
-          # Move all files and directories inside 'public' to 'temp_deploy/public_html'
-          cp -R public/* temp_deploy/public_html/
-          # Copy the rest of the application (excluding public) to temp_deploy
-          rsync -av --progress . temp_deploy --exclude public --exclude temp_deploy
-
-      - name: Deploy to FTP
+      # Step 1: Deploy contents of 'public' folder to 'public_html', excluding .htaccess, hot, index.php
+      - name: Deploy public folder contents to public_html
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: tor201.arandomserver.com
           username: ${{ secrets.ftp_username }}
           password: ${{ secrets.ftp_password }}
-          local-dir: temp_deploy/  # Add trailing slash to indicate it's a directory
+          local-dir: public/
+          server-dir: /home/jididigi/public_html/
+          exclude: |
+            .htaccess
+            hot
+            index.php
+            .git*
+            *.yml
+
+      # Step 2: Deploy the rest of the Laravel application (excluding 'public') to the main directory
+      - name: Deploy application files outside of public
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: tor201.arandomserver.com
+          username: ${{ secrets.ftp_username }}
+          password: ${{ secrets.ftp_password }}
+          local-dir: ./                    # The root directory, which includes the rest of the application
+          server-dir: /home/jididigi/bcart_backend/  # Destination directory on server
+          exclude: |
+            public
+            public_html
+            .git*
+            *.yml
