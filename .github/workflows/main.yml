@@ -13,10 +13,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Sync files
+      - name: Copy Public Folder Contents to Root Public HTML Directory
+        run: |
+          mkdir -p temp_deploy/public_html
+          # Move all files and directories inside 'public' to 'temp_deploy/public_html'
+          cp -R public/* temp_deploy/public_html/
+          # Copy the rest of the application (excluding public) to temp_deploy
+          rsync -av --progress . temp_deploy --exclude public --exclude temp_deploy
+
+      - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: tor201.arandomserver.com
           username: ${{ secrets.ftp_username }}
           password: ${{ secrets.ftp_password }}
-
+          local-dir: temp_deploy
