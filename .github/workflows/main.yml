@@ -27,4 +27,4 @@ jobs:
           server: tor201.arandomserver.com
           username: ${{ secrets.ftp_username }}
           password: ${{ secrets.ftp_password }}
-          local-dir: temp_deploy
+          local-dir: temp_deploy/  # Add trailing slash to indicate it's a directory
