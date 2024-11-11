@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Models\Photo;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Gate;
 
 class UserResource extends JsonResource
 {
@@ -38,8 +39,8 @@ class UserResource extends JsonResource
             'hiring_info' => new HiringResource($this->whenLoaded('hiring')),
             'photos' => PhotoResource::collection($this->whenLoaded('photos')),
             'permissions' => [
-                'can_upload' => auth()->can('create', Photo::class)
-            ]
+                'can_upload' => Gate::forUser($this->resource)->allows('create', Photo::class),
+            ],
         ];
     }
 }

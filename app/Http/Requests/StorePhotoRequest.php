@@ -22,7 +22,8 @@ class StorePhotoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5000', //5mb
+            'images' => 'required|array|min:1',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5000', // 5mb
             'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'price' => 'nullable|numeric',

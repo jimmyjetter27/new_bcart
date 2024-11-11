@@ -88,7 +88,15 @@ class PhotoController extends Controller implements HasMiddleware
 //                    'public_id' => $uploadedFile->getClientOriginalName(), // Example
 //                ]);
 
-                $result = $imageStorage->upload($uploadedFile, 'creative_uploads', null, $authenticated);
+                try {
+                    $result = $imageStorage->upload($uploadedFile, 'creative_uploads', null, $authenticated);
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Image upload failed.',
+                        'errors' => ['images' => [$e->getMessage()]],
+                    ], 500);
+                }
 
                 // Save the photo
                 $photo = Photo::create([
@@ -431,7 +439,6 @@ class PhotoController extends Controller implements HasMiddleware
             'image_url' => $imageUrl,
         ]);
     }
-
 
 
 }
