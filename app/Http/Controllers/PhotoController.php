@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\ImageStorageInterface;
+use App\Filters\PhotoInsensitiveLikeFilter;
 use App\Http\Resources\PhotoResource;
 use App\Http\Resources\UserResource;
 use App\Models\Photo;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class PhotoController extends Controller implements HasMiddleware
@@ -303,32 +305,14 @@ class PhotoController extends Controller implements HasMiddleware
 
     public function search(Request $request)
     {
-        $keyword = $request->query('keyword');
-        $query = Photo::query();
 
-        if ($keyword) {
-            $query->where(function ($query) use ($keyword) {
-                $query->where('title', 'like', "%$keyword%")
-                    ->orWhere('description', 'like', "%$keyword%")
-                    ->orWhere('slug', 'like', "%$keyword%")
-                    ->orWhere('price', 'like', "%$keyword%"); // Allows searching by price
+        $photos = QueryBuilder::for(Photo::class)
+            ->allowedFilters([
+                AllowedFilter::custom('keyword', new PhotoInsensitiveLikeFilter),
+            ])
+            ->where('is_approved', true)
+            ->paginate(15);
 
-                // Search in tags
-                $query->orWhereHas('tags', function ($tagQuery) use ($keyword) {
-                    $tagQuery->where('name', 'like', "%$keyword%");
-                });
-
-                $query->orWhereHas('photo_categories', function ($categoryQuery) use ($keyword) {
-                    $categoryQuery->where('photo_category', 'like', "%$keyword%");
-                });
-            });
-        }
-
-        // Optional: Filter only approved photos
-        $query->where('is_approved', true);
-
-        // Paginate the results
-        $photos = $query->paginate(15);
 
         if ($photos->isEmpty()) {
             return response()->json([

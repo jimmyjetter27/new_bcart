@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Filters\FilterByMinRate;
 use App\Filters\FiltersByFullName;
-use App\Filters\InsensitiveLikeFilter;
+use App\Filters\UserInsensitiveLikeFilter;
 use App\Http\Resources\UserResource;
 use App\Models\Creative;
 use App\Http\Controllers\Controller;
@@ -122,7 +122,7 @@ class CreativeController extends Controller implements HasMiddleware
         $users = QueryBuilder::for(User::class)
             ->where('type', Creative::class)
             ->allowedFilters([
-                AllowedFilter::custom('keyword', new InsensitiveLikeFilter), // Use 'keyword' filter
+                AllowedFilter::custom('keyword', new UserInsensitiveLikeFilter),
             ])
             ->paginate(15);
 
