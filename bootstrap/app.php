@@ -23,8 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            'http://localhost:3000',
-            'http://localhost:8000',
+//            'http://localhost:3000',
+//            'http://localhost:8000',
             'api/*',
             'sanctum/csrf-cookie',
 
