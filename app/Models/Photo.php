@@ -22,6 +22,11 @@ class Photo extends Model
         'photo_category_id'
     ];
 
+    public function getPriceAttribute($value)
+    {
+        return $value ?? 0;
+    }
+
     public function isStoredInCloudinary()
     {
         // Cloudinary public IDs typically do not contain file extensions like '.jpg' or '.png'
