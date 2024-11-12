@@ -29,7 +29,7 @@ class PhotoPolicy
      */
     public function create(User $user): Response
     {
-        if ($user->isCreative()) {
+        if ($user->isCreative() && $user->creative_status == 'Verified') {
             return Response::allow();
         }
 

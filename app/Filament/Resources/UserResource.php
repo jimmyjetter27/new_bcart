@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
+use Filament\Tables\Actions\Action;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -22,6 +23,7 @@ class UserResource extends Resource
     protected static ?string $navigationLabel = 'Users'; // Sidebar label
 //    protected static ?string $navigationGroup = 'Content Management';
     protected static ?int $navigationSort = 2;
+
 //    protected static ?string $navigationGroup = 'Settings';
     public static function form(Form $form): Form
     {
@@ -70,7 +72,29 @@ class UserResource extends Resource
                         'unavailable' => 'Unavailable',
                     ]),
             ])
+            ->defaultSort('created_at', 'desc')
             ->actions([
+                Action::make('updateCreativeStatus')
+                    ->label('Update Status')
+                    ->icon('heroicon-o-pencil')
+                    ->visible(fn ($record) => $record->type === 'App\Models\Creative')
+                    ->action(function (User $record, array $data) {
+                        $record->update(['creative_status' => $data['creative_status']]);
+                    })
+                    ->form([
+                        Forms\Components\Select::make('creative_status')
+                            ->options([
+                                'Verified' => 'Verified',
+                                'Declined' => 'Declined'
+//                                'Available' => 'Available',
+//                                'Unavailable' => 'Unavailable',
+                            ])
+                            ->required()
+                            ->label('Creative Status')
+                    ])
+                    ->modalHeading('Update Creative Status')
+                    ->modalDescription('Select the new status for the creative.')
+                    ->requiresConfirmation(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
