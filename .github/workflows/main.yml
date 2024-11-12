@@ -13,33 +13,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 1: Deploy contents of 'public' folder to 'public_html', excluding .htaccess, hot, index.php
-      - name: Deploy public folder contents to public_html
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
         with:
-          server: tor201.arandomserver.com
-          username: ${{ secrets.ftp_username }}
-          password: ${{ secrets.ftp_password }}
-          local-dir: public/
-          server-dir: /home/jididigi/public_html/
-          exclude: |
-            .htaccess
-            hot
-            index.php
-            .git*
-            *.yml
+          ssh-private-key: ${{ secrets.SSH_KEY }}
 
-      # Step 2: Deploy the rest of the Laravel application (excluding 'public') to the main directory
-      - name: Deploy application files outside of public
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: tor201.arandomserver.com
-          username: ${{ secrets.ftp_username }}
-          password: ${{ secrets.ftp_password }}
-          local-dir: ./                    # The root directory, which includes the rest of the application
-          server-dir: /home/jididigi/bcart_backend/  # Destination directory on server
-          exclude: |
-            public
-            public_html
-            .git*
-            *.yml
+      - name: Sync Files to Server
+        run: |
+          # Sync application files to the main directory
+          rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" --exclude="public" --exclude=".git*" --exclude="*.yml" ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/jididigi/bcart_backend/
+
+          # Sync public folder contents to public_html, excluding specific files
+          rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" --exclude=".htaccess" --exclude="hot" --exclude="index.php" public/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/jididigi/public_html/
+
+      - name: Run Post-Deployment Commands
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
+            # Navigate to the application directory
+            cd /home/jididigi/bcart_backend
+
+            # Run necessary post-deployment commands
+            php artisan migrate --force
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan view:cache
+          EOF

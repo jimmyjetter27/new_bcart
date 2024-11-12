@@ -88,7 +88,7 @@ class PhotoResource extends Resource
                     ->icon('heroicon-o-eye')
                     ->action(fn () => null) // Set to do nothing on submit, making it view-only
                     ->modalHeading('Photo Details')
-                    ->modalActions([]) // Sets an empty array for modal actions to remove buttons
+                    ->modalSubmitAction(false)
                     ->extraAttributes([
                         'style' => 'text-align: left;', // Optional: to ensure content aligns properly
                     ])
@@ -100,6 +100,14 @@ class PhotoResource extends Resource
                             'created_at' => $record->created_at->format('F j, Y'),
                         ]);
                     }),
+
+                Action::make('delete')
+                    ->action(fn (Photo $record) => $record->delete())
+                    ->requiresConfirmation()
+                    ->modalHeading('Delete post')
+                    ->modalDescription('Are you sure you\'d like to delete this post? This cannot be undone.')
+                    ->modalSubmitActionLabel('Yes, delete it')
+//                    ->slideOver()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
