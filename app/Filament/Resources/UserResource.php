@@ -100,6 +100,16 @@ class UserResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Action::make('bulkUpdateCreative')
+                        ->label('Update Selected Creative')
+                        ->icon('heroicon-o-check-circle')
+                        ->action(function (User $record, array $data) {
+                            $record->update(['creative_status' => $data['creative_status']]);
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Bulk Update Creative Status')
+                        ->modalDescription('Are you sure you want to update all selected creatives?')
+                        ->color('success')
                 ]),
             ]);
     }
