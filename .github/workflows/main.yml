@@ -13,28 +13,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
+      - name: Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}
-
-      - name: Sync Files to Server
-        run: |
-          # Sync application files to the main directory
-          rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" --exclude="public" --exclude=".git*" --exclude="*.yml" ./ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/jididigi/bcart_backend/
-
-          # Sync public folder contents to public_html, excluding specific files
-          rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" --exclude=".htaccess" --exclude="hot" --exclude="index.php" public/ ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/home/jididigi/public_html/
-
-      - name: Run Post-Deployment Commands
-        run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
-            # Navigate to the application directory
-            cd /home/jididigi/bcart_backend
-
-            # Run necessary post-deployment commands
-            php artisan migrate --force
-            php artisan optimize:clear
-            php artisan config:cache
-            php artisan view:cache
-          EOF
+          server: tor201.arandomserver.com
+          username: ${{ secrets.ftp_username }}
+          password: ${{ secrets.ftp_password }}
