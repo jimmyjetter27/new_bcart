@@ -170,9 +170,12 @@ class OrderController extends Controller
                 'transaction_status' => 'pending'
             ]);
 
-            // Attach photos to the order
+            // Attach photos to the order through the orderables table
             foreach ($photos as $photo) {
-                $order->orderable()->associate($photo);
+                $order->orderables()->create([
+                    'orderable_id' => $photo->id,
+                    'orderable_type' => Photo::class,
+                ]);
             }
 
             // Initialize payment with Paystack

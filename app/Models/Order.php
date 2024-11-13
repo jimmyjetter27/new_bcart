@@ -18,10 +18,10 @@ class Order extends Model
         'transaction_status'
     ];
 
-    public function orderables()
-    {
-        return $this->morphToMany(Photo::class, 'orderable');
-    }
+//    public function orderables()
+//    {
+//        return $this->morphToMany(Photo::class, 'orderable');
+//    }
 
 
     public function photos()
