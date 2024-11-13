@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained('users');
-            $table->morphs('orderable'); // This will track what type of order (Photo, Hiring, etc.)
+//            $table->morphs('orderable'); // This will track what type of order (Photo, Hiring, etc.)
             $table->string('order_number')->unique();
             $table->decimal('total_price', 8, 2);
             $table->decimal('discount_price', 8, 2)->nullable();

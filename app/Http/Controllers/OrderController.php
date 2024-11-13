@@ -179,8 +179,13 @@ class OrderController extends Controller
 //            }
 
             foreach ($photos as $photo) {
-                $order->orderables()->attach($photo->id, ['orderable_type' => Photo::class]);
+                \App\Models\Orderable::create([
+                    'order_id' => $order->id,
+                    'orderable_id' => $photo->id,
+                    'orderable_type' => Photo::class,
+                ]);
             }
+
 
 
             // Initialize payment with Paystack
@@ -221,6 +226,5 @@ class OrderController extends Controller
             ], 500);
         }
     }
-
 
 }
