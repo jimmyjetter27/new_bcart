@@ -74,7 +74,7 @@ class TestController extends Controller
             'mobile_money' => ['phone' => '0551234987', 'provider' => 'mtn'],
             'currency' => 'GHS'
         ];
-        return $service->charge($payload);
+        return $service->initializePayment($payload);
     }
 
     public function verifyUser($email)
