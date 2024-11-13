@@ -97,6 +97,12 @@ class CreativeController extends Controller implements HasMiddleware
             return Creative::inRandomOrder()->first();
         });
 
+        $featuredCreative->load([
+            'creative_categories',
+            'photos' => function ($query) {
+                $query->limit(10); // Load only 5 photos
+            }
+        ]);
         return response()->json([
             'success' => true,
             'message' => 'Featured creative',
