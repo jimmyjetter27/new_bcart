@@ -94,6 +94,7 @@ Route::get('active', function () {
 Route::get('list-envs', [\App\Http\Controllers\TestController::class, 'listEnvs'])->middleware('auth:sanctum');
 
 Route::post('test-payment', [\App\Http\Controllers\TestController::class, 'testPayment']);
+Route::post('verify-payment', [\App\Http\Controllers\TestController::class, 'verifyPayment']);
 Route::get('approve-photo/{photo}', [\App\Http\Controllers\TestController::class, 'approvePhoto']);
 
 Route::get('image-test', [\App\Http\Controllers\TestController::class, 'imageTest']);

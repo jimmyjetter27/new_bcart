@@ -69,12 +69,18 @@ class TestController extends Controller
     public function testPayment(Request $request, PayStackService $service)
     {
         $payload = [
-            'email' => 'jimmyjetter27@gmail.com',
+            'email' => env('PAYSTACK_USER_EMAIL'),
             'amount' => $request->amount,
-            'mobile_money' => ['phone' => '0551234987', 'provider' => 'mtn'],
+//            'mobile_money' => ['phone' => '0551234987', 'provider' => 'mtn'],
             'currency' => 'GHS'
         ];
         return $service->initializePayment($payload);
+    }
+
+    public function verifyPayment(Request $request, PayStackService $service)
+    {
+        $ref = $request->ref;
+        return $service->verifyPayment($ref);
     }
 
     public function verifyUser($email)

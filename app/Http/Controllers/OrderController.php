@@ -158,11 +158,10 @@ class OrderController extends Controller
             ], 400);
         }
 
-        $preferredPaymentMethod = $paymentInfo->preferred_payment_account;
-
-        // Create Order with transaction
+        // Begin transaction
         DB::beginTransaction();
         try {
+            // Create order
             $order = Order::create([
                 'customer_id' => $user->id,
                 'order_number' => Str::uuid(),
@@ -170,34 +169,38 @@ class OrderController extends Controller
                 'transaction_status' => 'pending'
             ]);
 
-            // Attach multiple photos to the order using a pivot or relation
+            // Attach photos to the order
             foreach ($photos as $photo) {
                 $order->orderable()->associate($photo);
             }
 
-            $transactionResult = $preferredPaymentMethod === 'bank_account'
-                ? $paymentService->chargeWithCard()
-                : $paymentService->chargeWithMobileMoney();
-
-            $transaction = Transaction::create([
-                'order_id' => $order->id,
-                'transaction_id' => $transactionResult['transaction_id'],
-                'payment_method' => $preferredPaymentMethod,
+            // Initialize payment with Paystack
+            $transactionResult = $paymentService->initializePayment([
+                'email' => env('PAYSTACK_USER_EMAIL'),
                 'amount' => $totalPrice,
-                'status' => $transactionResult['status'],
-                'transaction_date' => now(),
+                'currency' => 'GHS'
             ]);
 
-            $order->update([
-                'transaction_status' => $transaction->status === 'completed' ? 'completed' : 'failed'
+            // Save transaction
+            $transaction = Transaction::create([
+                'order_id' => $order->id,
+                'transaction_id' => $transactionResult['data']['reference'],
+                'payment_method' => $paymentInfo->preferred_payment_account,
+                'amount' => $totalPrice,
+                'status' => 'pending',  // Initial status is pending
+                'transaction_date' => now(),
             ]);
 
             DB::commit();
 
+            // Pass authorization URL to the frontend
             return response()->json([
                 'success' => true,
-                'message' => 'Photos purchased successfully.',
-                'order' => $order
+                'message' => 'Payment initialization successful. Redirecting to payment page...',
+                'data' => [
+                    'authorization_url' => $transactionResult['data']['authorization_url'],
+                    'order' => $order
+                ],
             ]);
 
         } catch (\Exception $e) {
