@@ -11,6 +11,13 @@ class Order extends Model
 
     use HasFactory;
 
+    protected $fillable = [
+        'customer_id',
+        'order_number',
+        'total_price',
+        'transaction_status'
+    ];
+
     public function orderables()
     {
         return $this->morphToMany(Photo::class, 'orderable');
