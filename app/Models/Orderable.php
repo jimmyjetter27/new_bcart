@@ -9,4 +9,10 @@ class Orderable extends Model
 {
     use HasFactory;
     protected $fillable = ['order_id', 'orderable_id', 'orderable_type'];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
 }
