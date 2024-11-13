@@ -10,6 +10,7 @@ use App\Services\PayStackService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class OrderController extends Controller
@@ -204,6 +205,7 @@ class OrderController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Transaction Failed Err: '. $e->getMessage());
             DB::rollback();
             return response()->json([
                 'success' => false,
