@@ -18,7 +18,7 @@ class PaymentInformation extends Model
         'bank_acc_num',
         'momo_acc_name',
         'momo_acc_number',
-        'momo_network',
+//        'momo_network',
         'preferred_payment_account'
     ];
 
