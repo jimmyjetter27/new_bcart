@@ -64,7 +64,7 @@ class PhotoCategoryController extends Controller implements HasMiddleware
         $creative_category = PhotoCategory::create([
             'image_public_id' => $result['public_id'] ?? null,
             'image_url' => $result['secure_url'] ?? null,
-            'photo_category' => $result->photo_category
+            'photo_category' => $request->photo_category
         ]);
 
         return response()->json([
