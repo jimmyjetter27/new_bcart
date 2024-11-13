@@ -148,8 +148,24 @@ class OrderController extends Controller
             ], 400);
         }
 
-        // Calculate total price
-        $totalPrice = $photos->sum('price');
+        // Filter out photos already purchased by the user
+        $alreadyPurchasedPhotoIds = Orderable::where('orderable_type', Photo::class)
+            ->whereIn('orderable_id', $photoIds)
+            ->whereHas('order', fn($query) => $query->where('customer_id', $user->id))
+            ->pluck('orderable_id')
+            ->toArray();
+
+        $newPhotos = $photos->filter(fn($photo) => !in_array($photo->id, $alreadyPurchasedPhotoIds));
+
+        if ($newPhotos->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You have already purchased all selected photos.',
+            ], 400);
+        }
+
+        // Calculate total price for new photos only
+        $totalPrice = $newPhotos->sum('price');
 
         $paymentInfo = $user->paymentInfo;
         if (!$paymentInfo || !$paymentInfo->preferred_payment_account) {
@@ -170,23 +186,14 @@ class OrderController extends Controller
                 'transaction_status' => 'pending'
             ]);
 
-            // Attach photos to the order through the orderables table
-//            foreach ($photos as $photo) {
-//                $order->orderables()->create([
-//                    'orderable_id' => $photo->id,
-//                    'orderable_type' => Photo::class,
-//                ]);
-//            }
-
-            foreach ($photos as $photo) {
+            // Attach new photos to the order through the orderables table
+            foreach ($newPhotos as $photo) {
                 \App\Models\Orderable::create([
                     'order_id' => $order->id,
                     'orderable_id' => $photo->id,
                     'orderable_type' => Photo::class,
                 ]);
             }
-
-
 
             // Initialize payment with Paystack
             $transactionResult = $paymentService->initializePayment([

@@ -39,14 +39,13 @@ class Photo extends Model
     }
 
 
-
     public function hasPurchasedPhoto($userId)
     {
         // orders table to track this
-        return Order::where('customer_id', $userId)
-            ->where('orderable_type', 'photo')
-            ->where('orderable_id', $this->id)
-            ->exists();
+        return $this->whereHas('orders', function ($query) use ($userId) {
+            $query->where('customer_id', $userId)
+                ->where('transaction_status', 'completed');
+        })->exists();
     }
 
     public function freeImage()

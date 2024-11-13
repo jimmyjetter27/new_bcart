@@ -32,8 +32,9 @@ class Order extends Model
 
     public function photos()
     {
-        return $this->morphedByMany(Photo::class, 'orderable');
+        return $this->morphedByMany(Photo::class, 'orderable', 'orderables');
     }
+
 
 
     public function customer()
