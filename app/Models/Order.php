@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Order extends Model
 {
@@ -22,6 +23,11 @@ class Order extends Model
 //    {
 //        return $this->morphToMany(Photo::class, 'orderable');
 //    }
+
+    public function orderables(): MorphToMany
+    {
+        return $this->morphToMany(Photo::class, 'orderable', 'orderables');
+    }
 
 
     public function photos()

@@ -171,12 +171,17 @@ class OrderController extends Controller
             ]);
 
             // Attach photos to the order through the orderables table
+//            foreach ($photos as $photo) {
+//                $order->orderables()->create([
+//                    'orderable_id' => $photo->id,
+//                    'orderable_type' => Photo::class,
+//                ]);
+//            }
+
             foreach ($photos as $photo) {
-                $order->orderables()->create([
-                    'orderable_id' => $photo->id,
-                    'orderable_type' => Photo::class,
-                ]);
+                $order->orderables()->attach($photo->id, ['orderable_type' => Photo::class]);
             }
+
 
             // Initialize payment with Paystack
             $transactionResult = $paymentService->initializePayment([
