@@ -39,6 +39,7 @@ class Photo extends Model
     }
 
 
+
     public function hasPurchasedPhoto($userId)
     {
         // orders table to track this
