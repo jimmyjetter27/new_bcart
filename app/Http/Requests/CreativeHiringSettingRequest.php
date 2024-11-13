@@ -56,14 +56,14 @@ class CreativeHiringSettingRequest extends FormRequest
                 Rule::unique('payment_information', 'bank_acc_num')->ignore($this->user()->paymentInfo?->id)
             ],
 
-            'payment_details.momo_acc_name' => 'nullable|string|required_with:payment_details.momo_acc_number,payment_details.momo_network',
+            'payment_details.momo_acc_name' => 'nullable|string|required_with:payment_details.momo_acc_number',
             'payment_details.momo_acc_number' => [
                 'nullable',
                 'numeric',
-                'required_with:payment_details.momo_acc_name,payment_details.momo_network',
+                'required_with:payment_details.momo_acc_name',
                 Rule::unique('payment_information', 'momo_acc_number')->ignore($this->user()->paymentInfo?->id)
             ],
-            'payment_details.momo_network' => 'nullable|in:atl,mtn,vod|required_with:payment_details.momo_acc_name,payment_details.momo_acc_number',
+//            'payment_details.momo_network' => 'nullable|in:atl,mtn,vod|required_with:payment_details.momo_acc_name,payment_details.momo_acc_number',
 //            'payment_details.preferred_payment_account' => 'nullable|in:bank_account,momo',
             'payment_details.preferred_payment_account' => [
                 'nullable',
@@ -74,7 +74,7 @@ class CreativeHiringSettingRequest extends FormRequest
                 'required_if:payment_details.bank_acc_num,!=,null',
                 'required_if:payment_details.momo_acc_name,!=,null',
                 'required_if:payment_details.momo_acc_number,!=,null',
-                'required_if:payment_details.momo_network,!=,null',
+//                'required_if:payment_details.momo_network,!=,null',
             ],
 
             'creative_categories' => 'required|array',
