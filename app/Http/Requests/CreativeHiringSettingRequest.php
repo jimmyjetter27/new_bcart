@@ -77,7 +77,7 @@ class CreativeHiringSettingRequest extends FormRequest
 //                'required_if:payment_details.momo_network,!=,null',
             ],
 
-            'creative_categories' => 'required_if:creative_hire_status|array',
+            'creative_categories' => 'required_if:creative_hire_status,true|array',
             'creative_categories.*' => 'exists:creative_categories,id',
         ];
     }
