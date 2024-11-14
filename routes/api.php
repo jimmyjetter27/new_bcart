@@ -98,6 +98,8 @@ Route::post('verify-payment', [\App\Http\Controllers\TestController::class, 'ver
 Route::get('approve-photo/{photo}', [\App\Http\Controllers\TestController::class, 'approvePhoto']);
 
 Route::get('image-test', [\App\Http\Controllers\TestController::class, 'imageTest']);
+Route::delete('unassign-photos', [\App\Http\Controllers\TestController::class, 'unassignPhotos'])->middleware('auth:sanctum');
+
 
 Route::get('pass', function () {
    return env('FRONTEND_URL');
