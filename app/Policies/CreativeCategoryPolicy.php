@@ -11,7 +11,7 @@ class CreativeCategoryPolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): Response
+    public function viewAny(User $user): true
     {
         return true;
     }

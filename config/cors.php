@@ -28,7 +28,8 @@ return [
         env('FRONTEND_URL'),
         'http://localhost:8000',
         'http://localhost:3000',
-        'https://backend.bcartgh.com',
+        'https://demo.bcartgh.com'
+//        'https://backend.bcartgh.com',
     ],
 
     'allowed_origins_patterns' => [],
