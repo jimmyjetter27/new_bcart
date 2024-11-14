@@ -14,6 +14,19 @@ class CloudinaryStorage implements ImageStorageInterface
 
     public function __construct()
     {
+
+        $cloudName = env('CLOUDINARY_CLOUD_NAME');
+        $apiKey = env('CLOUDINARY_API_KEY');
+        $apiSecret = env('CLOUDINARY_API_SECRET');
+        $cloudinaryUrl = env('CLOUDINARY_URL'); // Cloudinary may rely on this
+
+        \Log::info('Cloudinary Environment Check', [
+            'cloud_name' => $cloudName,
+            'api_key' => $apiKey,
+            'api_secret' => $apiSecret,
+            'cloudinary_url' => $cloudinaryUrl,
+        ]);
+
         $this->cloudinary = new Cloudinary([
             'cloud' => [
                 'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
