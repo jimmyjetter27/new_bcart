@@ -6,6 +6,7 @@ use App\Contracts\ImageStorageInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PhotoResource;
 use App\Http\Resources\UserResource;
+use App\Models\Orderable;
 use App\Models\Photo;
 use App\Models\User;
 use App\Services\CloudinaryStorage;
