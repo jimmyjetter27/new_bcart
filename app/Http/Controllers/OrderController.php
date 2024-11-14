@@ -179,22 +179,13 @@ class OrderController extends Controller
         // Begin transaction
         DB::beginTransaction();
         try {
-            // Create order
+            // Create order without attaching photos yet
             $order = Order::create([
                 'customer_id' => $user->id,
                 'order_number' => Str::uuid(),
                 'total_price' => $totalPrice,
                 'transaction_status' => 'pending'
             ]);
-
-            // Attach new photos to the order through the orderables table
-            foreach ($newPhotos as $photo) {
-                \App\Models\Orderable::create([
-                    'order_id' => $order->id,
-                    'orderable_id' => $photo->id,
-                    'orderable_type' => Photo::class,
-                ]);
-            }
 
             // Initialize payment with Paystack
             $transactionResult = $paymentService->initializePayment([
@@ -203,13 +194,13 @@ class OrderController extends Controller
                 'currency' => 'GHS'
             ]);
 
-            // Save transaction
-            $transaction = Transaction::create([
+            // Save transaction with pending status
+            Transaction::create([
                 'order_id' => $order->id,
                 'transaction_id' => $transactionResult['data']['reference'],
                 'payment_method' => $paymentInfo->preferred_payment_account,
                 'amount' => $totalPrice,
-                'status' => 'pending',  // Initial status is pending
+                'status' => 'pending',
                 'transaction_date' => now(),
             ]);
 

@@ -49,6 +49,15 @@ class CreativeController extends Controller implements HasMiddleware
             ->latest()
             ->paginate($request->per_page ?? 15);
 
+        $creatives->load([
+            'pricing',
+            'paymentInfo',
+            'creative_categories',
+            'photos' => function ($query) {
+                $query->limit(5);
+            }
+        ]);
+
         return UserResource::collection($creatives);
     }
 

@@ -13,6 +13,7 @@ use App\Services\ImageStorageManager;
 use App\Services\LocalStorage;
 use App\Services\PayStackService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -152,4 +153,22 @@ class TestController extends Controller
 //        ];
         return response()->json($_ENV);
     }
+
+    public function unassignPhotos(Request $request)
+    {
+        $user = Auth::user();
+        $photoIds = $request->input('photo_ids');
+
+        // Validate that the user owns the photos in their orders
+        $deletableOrderables = Orderable::whereIn('orderable_id', $photoIds)
+            ->where('orderable_type', Photo::class)
+            ->whereHas('order', fn($query) => $query->where('customer_id', $user->id))
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Selected photos have been unassigned.',
+        ]);
+    }
+
 }
