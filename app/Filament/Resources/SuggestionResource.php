@@ -39,7 +39,13 @@ class SuggestionResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('suggestion')
+                    ->label('Suggestion')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Submitted At')
+                    ->dateTime()
+                    ->sortable(),
             ])
             ->filters([
                 //

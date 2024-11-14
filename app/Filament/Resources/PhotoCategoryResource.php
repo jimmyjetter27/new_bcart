@@ -14,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
 class PhotoCategoryResource extends Resource
@@ -28,29 +29,35 @@ class PhotoCategoryResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\TextInput::make('photo_category')
+                    ->required()
+                    ->label('Category Name'),
                 FileUpload::make('image')
                     ->label('Image')
-                    ->disk('cloudinary')
-                    ->directory('photo_categories')
-                    ->visibility('public')
-                    ->storeFileNamesUsing(fn($file) => Str::slug($file->getClientOriginalName())),
-                TextInput::make('photo_category')
-                    ->label('Photo Category')
-                    ->required(),
+                    ->image()
+                    ->preserveFilenames()
+                    ->disk('local')  // temporary local storage
+                    ->saveUploadedFileUsing(fn ($file) => static::saveImage($file, 'photo_categories')),
             ]);
+    }
+
+    protected static function saveImage($file, $folder)
+    {
+        $imageStorage = App::make(\App\Contracts\ImageStorageInterface::class);
+        $result = $imageStorage->upload($file, $folder);
+
+        return [
+            'image_public_id' => $result['public_id'] ?? null,
+            'image_url' => $result['secure_url'] ?? null,
+        ];
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image_url')
-                    ->label('Image')
-                    ->disk('cloudinary')
-                    ->visibility('public'),
-                Tables\Columns\TextColumn::make('photo_category')
-                    ->label('Category Name')
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('photo_category')->label('Category Name'),
+                Tables\Columns\ImageColumn::make('image_url')->label('Image'),
             ])
             ->filters([
                 //

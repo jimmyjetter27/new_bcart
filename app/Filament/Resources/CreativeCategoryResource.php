@@ -14,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
 class CreativeCategoryResource extends Resource
@@ -28,16 +29,27 @@ class CreativeCategoryResource extends Resource
     {
         return $form
             ->schema([
-                FileUpload::make('image')
-                    ->label('Image')
-                    ->disk('cloudinary')
-                    ->directory('creative_categories')
-                    ->visibility('public')
-                    ->storeFileNamesUsing(fn ($file) => Str::slug($file->getClientOriginalName())),
                 TextInput::make('creative_category')
                     ->label('Creative Category')
                     ->required(),
+                FileUpload::make('image')
+                    ->label('Image')
+                    ->image()
+                    ->preserveFilenames()
+                    ->disk('local') // temporary storage
+                    ->saveUploadedFileUsing(fn ($file) => static::saveImage($file, 'creative_categories')),
             ]);
+    }
+
+    protected static function saveImage($file, $folder)
+    {
+        $imageStorage = App::make(\App\Contracts\ImageStorageInterface::class);
+        $result = $imageStorage->upload($file, $folder);
+
+        return [
+            'image_public_id' => $result['public_id'] ?? null,
+            'image_url' => $result['secure_url'] ?? null,
+        ];
     }
 
     public static function table(Table $table): Table
@@ -46,7 +58,7 @@ class CreativeCategoryResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('image_url')
                     ->label('Image')
-                    ->disk('cloudinary')
+                    ->disk('cloudinary') // or 'local', depending on configuration
                     ->visibility('public'),
                 Tables\Columns\TextColumn::make('creative_category')
                     ->label('Category Name')
