@@ -20,64 +20,61 @@ class CloudinaryStorage implements ImageStorageInterface
         $this->cloudinary = new Cloudinary([
             'cloud' => [
                 'cloud_name' => config('services.cloudinary.cloud_name'),
-                'api_key'    => config('services.cloudinary.api_key'),
+                'api_key' => config('services.cloudinary.api_key'),
                 'api_secret' => config('services.cloudinary.api_secret'),
             ],
         ]);
     }
 
-    public function upload($imageFile, $folder, $publicId = null, $authenticated = false): array
+    public function upload($imageFile, $folder, $publicId = null, $authenticated = false, $options = []): array
     {
-//        dd([
-//            [
-//                'public_id' => $publicId,
-//                'original_name' => $imageFile->getClientOriginalName(),
-//                'folder' => $folder,
-//                'authenticated' => $authenticated,
-//            ]
+        // Log upload details
+//        Log::info('Uploading file...', [
+//            'public_id' => $publicId,
+//            'original_name' => $imageFile->getClientOriginalName(),
+//            'folder' => $folder,
+//            'authenticated' => $authenticated,
 //        ]);
-        Log::info('Uploading file...', [
-            'public_id' => $publicId,
-            'original_name' => $imageFile->getClientOriginalName(),
-            'folder' => $folder,
-            'authenticated' => $authenticated,
-        ]);
 
-        // Generate a unique filename for the temporary storage
+        // Set default upload options
+        $uploadOptions = array_merge([
+            'folder' => $folder,
+            'public_id' => $publicId,
+            'overwrite' => true, // Ensure old files are replaced
+        ], $options);
+
+        // Include authentication type if needed
+        if ($authenticated) {
+            $uploadOptions['type'] = 'authenticated';
+        }
+
+        // Generate a unique filename for temporary storage
         $extension = $imageFile->getClientOriginalExtension();
         $tempFileName = Str::random(10) . '.' . $extension;
 
-        // Save the file to Laravel's 'temp' disk
+        // Save the file temporarily using Laravel's 'temp' disk
         $tempFilePath = Storage::disk('temp')->putFileAs('', $imageFile, $tempFileName);
         $tempFileFullPath = Storage::disk('temp')->path($tempFileName);
 
-        Log::info('File temporarily stored', ['temp_path' => $tempFileFullPath]);
+//        Log::info('File temporarily stored', ['temp_path' => $tempFileFullPath]);
 
         try {
-            // Upload the file to Cloudinary
-            $uploadOptions = [
-                'folder' => $folder,
-                'public_id' => $publicId ?? null,
-            ];
-
-            if ($authenticated) {
-                $uploadOptions['type'] = 'authenticated';
-            }
-
+            // Upload the file to Cloudinary with options
             $response = $this->cloudinary->uploadApi()->upload($tempFileFullPath, $uploadOptions);
 
-//            Log::info('Cloudinary upload response', ['response' => $response]);
+            Log::info('Cloudinary upload response', ['response' => $response]);
 
-            // Delete the temporary file from the 'temp' disk
+            // Clean up the temporary file
             Storage::disk('temp')->delete($tempFileName);
-//            Log::info('Temporary file deleted');
+            Log::info('Temporary file deleted');
 
+            // Return the public ID and secure URL
             return [
                 'public_id' => Str::after($response['public_id'], $folder . '/'),
                 'secure_url' => $response['secure_url'],
             ];
         } catch (\Exception $e) {
-            // Cleanup and rethrow the exception
+            // Clean up the temporary file on failure
             Storage::disk('temp')->delete($tempFileName);
             Log::error('Cloudinary upload failed', ['error' => $e->getMessage()]);
             throw $e;

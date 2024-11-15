@@ -36,7 +36,11 @@ class EditPhotoCategory extends EditRecord
 
             // Upload the new image using the same public ID or category name
             $publicId = Str::slug($record->photo_category);
-            $result = $imageStorage->upload($imageFile, 'photo_categories', $publicId);
+            $uploadOptions = [
+                'invalidate' => true, // Invalidate previous versions
+                'overwrite' => true, // Ensure new version overwrites old one
+            ];
+            $result = $imageStorage->upload($imageFile, 'photo_categories', $publicId, $uploadOptions);
 
             Log::info('Cloudinary upload result (after edit):', $result);
 
