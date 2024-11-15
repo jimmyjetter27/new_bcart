@@ -31,20 +31,22 @@ class EditPhotoCategory extends EditRecord
 
             // Delete the old image if it exists
             if ($record->image_public_id) {
-//                $imageStorage->delete('photo_categories/' . $record->image_public_id);
-                $imageStorage->delete('photo_categories/' . Str::slug($photoCategory->image_public_id) ?? Str::slug(request()->photo_category));
+                $imageStorage->delete('photo_categories/' . $record->image_public_id);
             }
 
             // Upload the new image using the same public ID or category name
-            $result = $imageStorage->upload($imageFile, 'photo_categories', Str::slug($record->photo_category));
+            $publicId = Str::slug($record->photo_category);
+            $result = $imageStorage->upload($imageFile, 'photo_categories', $publicId);
+
+            Log::info('Cloudinary upload result (after edit):', $result);
 
             // Update the record with the new image details
             $record->update([
                 'image_public_id' => $result['public_id'],
-                'image_url' => $result['secure_url'],
+                'image_url' => $result['secure_url'], // Save the latest secure_url
             ]);
 
-            Log::info('Image details updated after edit', [
+            Log::info('Image details updated after edit:', [
                 'image_public_id' => $result['public_id'],
                 'image_url' => $result['secure_url'],
             ]);
