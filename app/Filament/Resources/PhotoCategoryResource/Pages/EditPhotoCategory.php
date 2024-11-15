@@ -12,13 +12,6 @@ class EditPhotoCategory extends EditRecord
 {
     protected static string $resource = PhotoCategoryResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-        ];
-    }
-
     protected function afterSave(): void
     {
         $record = $this->record;
@@ -34,27 +27,33 @@ class EditPhotoCategory extends EditRecord
                 $imageStorage->delete('photo_categories/' . $record->image_public_id);
             }
 
-            // Upload the new image using the same public ID or category name
+            // Generate the new public ID for Cloudinary
             $publicId = Str::slug($record->photo_category);
-            $uploadOptions = [
-                'invalidate' => true, // Invalidate previous versions
-                'overwrite' => true, // Ensure new version overwrites old one
-            ];
-            $result = $imageStorage->upload($imageFile, 'photo_categories', $publicId, $uploadOptions);
+            $result = $imageStorage->upload($imageFile, 'photo_categories', $publicId);
 
-            Log::info('Cloudinary upload result (after edit):', $result);
+            Log::info('Cloudinary upload result:', $result);
 
             // Update the record with the new image details
             $record->update([
                 'image_public_id' => $result['public_id'],
-                'image_url' => $result['secure_url'], // Save the latest secure_url
+                'image_url' => $result['secure_url'], // Save the latest secure URL
             ]);
 
-            Log::info('Image details updated after edit:', [
+            Log::info('Updated photo category record:', [
+                'id' => $record->id,
                 'image_public_id' => $result['public_id'],
                 'image_url' => $result['secure_url'],
             ]);
         }
     }
 
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (request()->has('image_public_id') && request()->has('image_url')) {
+            $data['image_public_id'] = request('image_public_id');
+            $data['image_url'] = request('image_url');
+        }
+
+        return $data;
+    }
 }

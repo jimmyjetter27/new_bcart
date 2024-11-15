@@ -49,17 +49,31 @@ class PhotoCategoryResource extends Resource
                             throw new \Exception('Photo category is required to upload the image.');
                         }
 
+                        // Get the record's existing image_public_id if it exists
+                        $currentPublicId = $get('image_public_id');
+
+                        if ($currentPublicId) {
+                            // Attempt to delete the old image
+                            $deletionSuccess = $imageStorage->delete('photo_categories/' . $currentPublicId);
+                            Log::info('Old image deletion result:', [
+                                'image_public_id' => $currentPublicId,
+                                'deletion_success' => $deletionSuccess,
+                            ]);
+                        }
+
                         // Generate the public ID for Cloudinary
                         $publicId = Str::slug($photoCategory);
 
-//                        Log::info("Uploading file with public ID: $publicId");
-
-                        // Upload the image
+                        // Upload the new image
                         $result = $imageStorage->upload($file, 'photo_categories', $publicId);
 
-//                        Log::info('Cloudinary upload result:', $result);
+                        Log::info('Cloudinary upload result:', $result);
+                        Log::info('publicId: '. $publicId);
 
                         // Update the hidden fields for saving in the database
+                        $set('image_public_id', $result['public_id']);
+                        $set('image_url', $result['secure_url']);
+
                         request()->merge([
                             'image_public_id' => $result['public_id'],
                             'image_url' => $result['secure_url'],
@@ -68,12 +82,13 @@ class PhotoCategoryResource extends Resource
                         return $result['secure_url'];
                     }),
                 TextInput::make('image_public_id')
-                    ->hidden() // Hidden but bound to the model
-                    ->dehydrated(true), // Ensure it is saved into the database
-
+                    ->hidden()
+                    ->dehydrated(true)
+                    ->default(''), // Avoid null issues during form hydration
                 TextInput::make('image_url')
-                    ->hidden() // Hidden but bound to the model
-                    ->dehydrated(true), // Ensure it is saved into the database
+                    ->hidden()
+                    ->dehydrated(true)
+                    ->default(''), // Avoid null issues during form hydration
             ]);
     }
 
