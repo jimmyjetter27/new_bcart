@@ -52,12 +52,12 @@ class PhotoCategoryResource extends Resource
                         // Generate the public ID for Cloudinary
                         $publicId = Str::slug($photoCategory);
 
-                        Log::info("Uploading file with public ID: $publicId");
+//                        Log::info("Uploading file with public ID: $publicId");
 
                         // Upload the image
                         $result = $imageStorage->upload($file, 'photo_categories', $publicId);
 
-                        Log::info('Cloudinary upload result:', $result);
+//                        Log::info('Cloudinary upload result:', $result);
 
                         // Update the hidden fields for saving in the database
                         request()->merge([
@@ -67,7 +67,6 @@ class PhotoCategoryResource extends Resource
 
                         return $result['secure_url'];
                     }),
-
                 TextInput::make('image_public_id')
                     ->hidden() // Hidden but bound to the model
                     ->dehydrated(true), // Ensure it is saved into the database
