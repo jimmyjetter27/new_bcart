@@ -12,14 +12,14 @@ class PhotoCategory extends Model
 
     protected $fillable = ['image_public_id', 'image_url', 'photo_category'];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::saving(function ($model) {
-            Log::info('Model before saving:', $model->toArray());
-        });
-    }
+//    protected static function boot()
+//    {
+//        parent::boot();
+//
+//        static::saving(function ($model) {
+//            Log::info('Model before saving:', $model->toArray());
+//        });
+//    }
 
 
     public function photos()

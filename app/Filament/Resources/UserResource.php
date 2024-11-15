@@ -13,6 +13,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Log;
 
 class UserResource extends Resource
 {
@@ -31,8 +32,9 @@ class UserResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('first_name')->required(),
                 Forms\Components\TextInput::make('last_name')->required(),
-                Forms\Components\TextInput::make('email')->email()->required(),
-                Forms\Components\TextInput::make('phone_number')->required(),
+                Forms\Components\TextInput::make('username')->required()->unique(ignoreRecord: true),
+                Forms\Components\TextInput::make('email')->email()->required()->unique(ignoreRecord: true),
+                Forms\Components\TextInput::make('phone_number')->required()->unique(ignoreRecord: true),
                 Forms\Components\Textarea::make('description')->maxLength(500),
                 Forms\Components\Select::make('type')
                     ->options([
@@ -40,7 +42,49 @@ class UserResource extends Resource
                         'App\Models\Admin' => 'Admin',
                         'App\Models\Creative' => 'Creative',
                         'App\Models\RegularUser' => 'Regular User',
-                    ])
+                    ]),
+                Forms\Components\FileUpload::make('profile_picture')
+                    ->label('Avatar')
+                    ->image()
+                    ->directory('avatars')
+                    ->preserveFilenames(false)
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg']) // Explicitly define MIME types
+                    ->maxSize(5000)
+                    ->saveUploadedFileUsing(function ($file, $state, $set, $get) {
+                        $imageStorage = app(\App\Contracts\ImageStorageInterface::class);
+
+                        // Delete old avatar if it exists
+                        $userId = $get('id');
+                        $user = $userId ? User::find($userId) : null;
+                        if ($user && $user->profile_picture_public_id) {
+                            $imageStorage->delete('avatars/' . $user->profile_picture_public_id);
+                        }
+
+                        // Upload new avatar
+                        $result = $imageStorage->upload($file, 'avatars');
+                        Log::info('Cloudinary upload result:', $result);
+
+                        // Merge metadata into the request for afterCreate
+                        request()->merge([
+                            'profile_picture_public_id' => $result['public_id'],
+                            'profile_picture_url' => $result['secure_url'],
+                        ]);
+
+                        // Update the form state
+                        $set('profile_picture_public_id', $result['public_id']);
+                        $set('profile_picture_url', $result['secure_url']);
+
+                        return $result['secure_url'];
+                    }),
+                Forms\Components\TextInput::make('profile_picture_public_id')
+                    ->hidden()
+                    ->dehydrated(true), // Ensures the value is saved to the database
+
+                Forms\Components\TextInput::make('profile_picture_url')
+                    ->hidden()
+                    ->dehydrated(true), // Ensures the value is saved to the database
+
+
 //                Forms\Components\Select::make('creative_status')
 //                    ->options([
 //                        'available' => 'Available',
@@ -57,6 +101,11 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('last_name')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('email')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('phone_number'),
+                Tables\Columns\ImageColumn::make('profile_picture_url')
+                    ->label('Avatar')
+                    ->circular()
+                    ->sortable()
+                    ->default(asset('default-avatar.png')),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
@@ -77,9 +126,29 @@ class UserResource extends Resource
                 Action::make('updateCreativeStatus')
                     ->label('Update Status')
                     ->icon('heroicon-o-pencil')
-                    ->visible(fn ($record) => $record->type === 'App\Models\Creative')
+                    ->color('gray')
+                    ->visible(fn($record) => $record->type === 'App\Models\Creative')
                     ->action(function (User $record, array $data) {
-                        $record->update(['creative_status' => $data['creative_status']]);
+                        if (!isset($data['profile_picture']) || !is_file($data['profile_picture'])) {
+                            throw new \Exception('Invalid avatar file provided.');
+                        }
+
+                        $imageStorage = app(\App\Contracts\ImageStorageInterface::class);
+
+                        // Delete the old avatar if it exists
+                        if ($record->profile_picture_public_id) {
+                            $imageStorage->delete('avatars/' . $record->profile_picture_public_id);
+                        }
+
+                        // Upload the new avatar
+                        $file = $data['profile_picture'];
+                        $result = $imageStorage->upload($file, 'avatars');
+
+                        // Update user's avatar info
+                        $record->update([
+                            'profile_picture_public_id' => $result['public_id'],
+                            'profile_picture_url' => $result['secure_url'],
+                        ]);
                     })
                     ->form([
                         Forms\Components\Select::make('creative_status')
@@ -96,6 +165,39 @@ class UserResource extends Resource
                     ->modalDescription('Select the new status for the creative.')
                     ->requiresConfirmation(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('updateAvatar')
+                    ->label('Update Avatar')
+                    ->icon('heroicon-o-camera')
+                    ->action(function (User $record, array $data) {
+                        $imageStorage = app(\App\Contracts\ImageStorageInterface::class);
+
+                        // Delete the old avatar if it exists
+                        if ($record->profile_picture_public_id) {
+                            $imageStorage->delete('avatars/' . $record->profile_picture_public_id);
+                        }
+
+                        // Upload the new avatar
+                        $file = $data['profile_picture'];
+                        $result = $imageStorage->upload($file, 'avatars');
+
+                        // Update user's avatar info
+                        $record->update([
+                            'profile_picture_public_id' => $result['public_id'],
+                            'profile_picture_url' => $result['secure_url'],
+                        ]);
+                    })
+                    ->form([
+                        Forms\Components\FileUpload::make('profile_picture')
+                            ->label('Avatar')
+                            ->directory('avatars')
+                            ->image()
+                            ->preserveFilenames(false) // Use random filenames
+                            ->required(),
+                    ])
+                    ->requiresConfirmation()
+                    ->modalHeading('Update User Avatar')
+                    ->modalDescription('Upload a new avatar for the user.'),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

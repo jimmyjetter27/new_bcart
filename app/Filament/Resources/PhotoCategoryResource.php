@@ -11,6 +11,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -32,6 +33,7 @@ class PhotoCategoryResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('photo_category')
                     ->required()
+                    ->unique(ignoreRecord: true)
                     ->label('Category Name'),
                 FileUpload::make('image')
                     ->label('Image')
@@ -55,10 +57,6 @@ class PhotoCategoryResource extends Resource
                         if ($currentPublicId) {
                             // Attempt to delete the old image
                             $deletionSuccess = $imageStorage->delete('photo_categories/' . $currentPublicId);
-                            Log::info('Old image deletion result:', [
-                                'image_public_id' => $currentPublicId,
-                                'deletion_success' => $deletionSuccess,
-                            ]);
                         }
 
                         // Generate the public ID for Cloudinary
@@ -67,8 +65,6 @@ class PhotoCategoryResource extends Resource
                         // Upload the new image
                         $result = $imageStorage->upload($file, 'photo_categories', $publicId);
 
-                        Log::info('Cloudinary upload result:', $result);
-                        Log::info('publicId: '. $publicId);
 
                         // Update the hidden fields for saving in the database
                         $set('image_public_id', $result['public_id']);
@@ -92,17 +88,6 @@ class PhotoCategoryResource extends Resource
             ]);
     }
 
-    protected static function saveImage($file, $folder)
-    {
-        $imageStorage = App::make(\App\Contracts\ImageStorageInterface::class);
-        $result = $imageStorage->upload($file, $folder);
-
-        return [
-            'image_public_id' => $result['public_id'] ?? null,
-            'image_url' => $result['secure_url'] ?? null,
-        ];
-    }
-
     public static function table(Table $table): Table
     {
         return $table
@@ -114,8 +99,23 @@ class PhotoCategoryResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Action::make('view_image')
+                    ->icon('heroicon-o-eye')
+                    ->label('')
+                    ->color('gray')
+                    ->modalHeading('Image Preview')
+                    ->modalSubmitAction(false)
+                    ->action(fn($record) => null)
+                    ->modalContent(fn($record) => view('filament.modals.image-preview', [
+                        'image_url' => $record->image_url,
+                    ]))
+                    ->disabled(fn($record) => is_null($record->image_url)),
+                Tables\Actions\EditAction::make()
+                    ->icon('heroicon-o-pencil')
+                    ->label(''),
                 Tables\Actions\DeleteAction::make()
+                    ->icon('heroicon-o-trash')
+                    ->label('')
                     ->before(function ($record) {
                         // Use the ImageStorageInterface to delete the associated image
                         $imageStorage = app(\App\Contracts\ImageStorageInterface::class);

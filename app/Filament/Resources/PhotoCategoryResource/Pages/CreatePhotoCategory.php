@@ -22,10 +22,10 @@ class CreatePhotoCategory extends CreateRecord
                 'image_url' => request('image_url'),
             ]);
 
-            Log::info('Image details saved after create:', [
-                'image_public_id' => request('image_public_id'),
-                'image_url' => request('image_url'),
-            ]);
+//            Log::info('Image details saved after create:', [
+//                'image_public_id' => request('image_public_id'),
+//                'image_url' => request('image_url'),
+//            ]);
         }
     }
 }

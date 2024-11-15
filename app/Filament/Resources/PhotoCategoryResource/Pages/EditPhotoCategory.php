@@ -31,19 +31,12 @@ class EditPhotoCategory extends EditRecord
             $publicId = Str::slug($record->photo_category);
             $result = $imageStorage->upload($imageFile, 'photo_categories', $publicId);
 
-            Log::info('Cloudinary upload result:', $result);
-
             // Update the record with the new image details
             $record->update([
                 'image_public_id' => $result['public_id'],
                 'image_url' => $result['secure_url'], // Save the latest secure URL
             ]);
 
-            Log::info('Updated photo category record:', [
-                'id' => $record->id,
-                'image_public_id' => $result['public_id'],
-                'image_url' => $result['secure_url'],
-            ]);
         }
     }
 

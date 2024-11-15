@@ -64,12 +64,12 @@ class PhotoResource extends Resource
                 Action::make('viewDetails')
                     ->icon('heroicon-o-eye')
                     ->label('')
-                    ->action(fn () => null)
+                    ->action(fn() => null)
                     ->modalHeading('Photo Details')
                     ->modalSubmitAction(false)
                     ->extraAttributes(['style' => 'text-align: left;'])
                     ->modalContent(function ($record) {
-                        return view('filament.photo-details', [
+                        return view('filament.modals.photo-details', [
                             'photo' => $record,
                             'creative' => $record->creative,
                             'categories' => $record->photo_categories,
@@ -100,7 +100,7 @@ class PhotoResource extends Resource
                     })
                     ->requiresConfirmation()
                     ->modalHeading('Delete post')
-                    ->modalDescription('Are you sure you\'d like to delete this post? This cannot be undone.')
+                    ->modalDescription('Are you sure you\'d like to delete this photo? This cannot be undone.')
                     ->modalSubmitActionLabel('Yes, delete it')
             ])
             ->bulkActions([
