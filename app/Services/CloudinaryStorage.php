@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\ImageStorageInterface;
 use Cloudinary\Cloudinary;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 
@@ -24,56 +25,63 @@ class CloudinaryStorage implements ImageStorageInterface
             ],
         ]);
     }
+
     public function upload($imageFile, $folder, $publicId = null, $authenticated = false): array
     {
-//        Log::info('Cloudinary Config: ', [
-//            'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-//            'api_key' => env('CLOUDINARY_API_KEY'),
-//            'api_secret' => env('CLOUDINARY_API_SECRET'),
+//        dd([
+//            [
+//                'public_id' => $publicId,
+//                'original_name' => $imageFile->getClientOriginalName(),
+//                'folder' => $folder,
+//                'authenticated' => $authenticated,
+//            ]
 //        ]);
+        Log::info('Uploading file...', [
+            'public_id' => $publicId,
+            'original_name' => $imageFile->getClientOriginalName(),
+            'folder' => $folder,
+            'authenticated' => $authenticated,
+        ]);
 
-//        Log::info(json_encode([
-//            'publicId' => $publicId,
-//            'folder' => $folder,
-//            'authenticated' => $authenticated
-//        ]));
-
-        // Generate a unique temporary file name
-        $tempFilePath = tempnam(sys_get_temp_dir(), 'upload_');
+        // Generate a unique filename for the temporary storage
         $extension = $imageFile->getClientOriginalExtension();
-        $tempFileWithExtension = $tempFilePath . '.' . $extension;
+        $tempFileName = Str::random(10) . '.' . $extension;
 
-        // Move the uploaded file to the temporary file with the correct extension
-        $imageFile->move(dirname($tempFilePath), basename($tempFileWithExtension));
+        // Save the file to Laravel's 'temp' disk
+        $tempFilePath = Storage::disk('temp')->putFileAs('', $imageFile, $tempFileName);
+        $tempFileFullPath = Storage::disk('temp')->path($tempFileName);
 
-        // Replace backslashes with forward slashes (Windows compatibility)
-        $tempFileWithExtension = str_replace('\\', '/', $tempFileWithExtension);
+        Log::info('File temporarily stored', ['temp_path' => $tempFileFullPath]);
 
-        // Set optional parameters
+        try {
+            // Upload the file to Cloudinary
+            $uploadOptions = [
+                'folder' => $folder,
+                'public_id' => $publicId ?? null,
+            ];
 
-        // Upload the file to Cloudinary
+            if ($authenticated) {
+                $uploadOptions['type'] = 'authenticated';
+            }
 
-        // Upload the file to Cloudinary
-        $uploadOptions = [
-            'folder'    => $folder,
-            'public_id' => $publicId ?? null,
-        ];
+            $response = $this->cloudinary->uploadApi()->upload($tempFileFullPath, $uploadOptions);
 
-        if ($authenticated) {
-            $uploadOptions['type'] = 'authenticated';
+//            Log::info('Cloudinary upload response', ['response' => $response]);
+
+            // Delete the temporary file from the 'temp' disk
+            Storage::disk('temp')->delete($tempFileName);
+//            Log::info('Temporary file deleted');
+
+            return [
+                'public_id' => Str::after($response['public_id'], $folder . '/'),
+                'secure_url' => $response['secure_url'],
+            ];
+        } catch (\Exception $e) {
+            // Cleanup and rethrow the exception
+            Storage::disk('temp')->delete($tempFileName);
+            Log::error('Cloudinary upload failed', ['error' => $e->getMessage()]);
+            throw $e;
         }
-
-        $response = $this->cloudinary->uploadApi()->upload($tempFileWithExtension, $uploadOptions);
-//        Log::info('Cloudinary upload response:', $response->getArrayCopy());
-
-        // Delete the temporary file
-        unlink($tempFileWithExtension);
-
-//        return $response->getArrayCopy();
-        return [
-            'public_id' => Str::after($response['public_id'], $folder.'/'),
-            'secure_url' => $response['secure_url'],
-        ];
     }
 
     public function delete($publicId, $authenticated = false): bool
