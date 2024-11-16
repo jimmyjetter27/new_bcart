@@ -39,6 +39,8 @@ class CloudinaryStorage implements ImageStorageInterface
             $uploadOptions['type'] = 'authenticated';
         }
 
+        Log::info('imageFile: '. json_encode($imageFile));
+
         $extension = $imageFile->getClientOriginalExtension();
         $tempFileName = Str::random(10) . '.' . $extension;
 

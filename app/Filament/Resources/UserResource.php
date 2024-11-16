@@ -49,9 +49,10 @@ class UserResource extends Resource
                     ->directory('avatars')
                     ->preserveFilenames(false)
 //                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg']) // Explicitly define MIME types
-                    ->acceptedFileTypes(['image/jpeg', 'image/png'])
+//                    ->acceptedFileTypes(['image/jpeg', 'image/png'])
                     ->maxSize(5000)
                     ->saveUploadedFileUsing(function ($file, $state, $set, $get) {
+                        Log::info('file: '. json_encode($file));
                         $imageStorage = app(\App\Contracts\ImageStorageInterface::class);
 
                         // Delete old avatar if it exists
