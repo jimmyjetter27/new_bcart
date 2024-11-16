@@ -157,6 +157,7 @@ class TestController extends Controller
 
     public function unassignPhotos(Request $request)
     {
+
         $user = Auth::user();
         $photoIds = $request->input('photo_ids');
 

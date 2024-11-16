@@ -48,7 +48,8 @@ class UserResource extends Resource
                     ->image()
                     ->directory('avatars')
                     ->preserveFilenames(false)
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg']) // Explicitly define MIME types
+//                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg']) // Explicitly define MIME types
+                    ->acceptedFileTypes(['image/jpeg', 'image/png'])
                     ->maxSize(5000)
                     ->saveUploadedFileUsing(function ($file, $state, $set, $get) {
                         $imageStorage = app(\App\Contracts\ImageStorageInterface::class);
