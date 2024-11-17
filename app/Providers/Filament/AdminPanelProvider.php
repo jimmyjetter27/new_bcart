@@ -2,15 +2,12 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\AdminResource\Widgets\PendingApprovalsWidget;
 use App\Filament\Resources\AdminResource\Widgets\StatsOverview;
-use App\Filament\Resources\OrderResource;
-use App\Filament\Resources\PhotoResource;
-use App\Filament\Resources\UserResource;
+use App\Filament\Resources\AdminResource\Widgets\UserGrowthChart;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\MenuItem;
-use Filament\Navigation\NavigationItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -45,7 +42,9 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
 //                Widgets\FilamentInfoWidget::class,
-                StatsOverview::class
+                StatsOverview::class,
+//                PendingApprovalsWidget::class,
+                UserGrowthChart::class
             ])
             ->userMenuItems([
 //                'logout' => MenuItem::make()->label('Go out')

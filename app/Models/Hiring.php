@@ -30,16 +30,6 @@ class Hiring extends Model
         return $this->belongsTo(User::class, 'regular_user_id');
     }
 
-//    public function payment()
-//    {
-//        return $this->morphOne(Payment::class, 'payable');
-//    }
-
-//    public function categories()
-//    {
-//        return $this->belongsToMany(CreativeCategory::class, 'hiring_creative_categories');
-//    }
-
     public function categories()
     {
         return $this->belongsToMany(CreativeCategory::class, 'hiring_categories');

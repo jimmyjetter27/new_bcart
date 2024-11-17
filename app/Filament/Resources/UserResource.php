@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
@@ -88,6 +89,14 @@ class UserResource extends Resource
                     ->hidden()
                     ->dehydrated(true)
                     ->default(''),
+                TextInput::make('password')
+                    ->password()
+                    ->label('Password')
+                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                    ->dehydrated(fn ($state) => filled($state))
+                    ->required(fn($record) => $record === null) // Only required for new users
+                    ->visible(fn($record) => $record === null || $record !== null) // Show for both create and edit
+//                    ->helperText('Leave blank if you do not want to change the password.'),
 
 
 //                Forms\Components\Select::make('creative_status')

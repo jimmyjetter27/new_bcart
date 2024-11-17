@@ -34,7 +34,13 @@ class PhotoResource extends JsonResource
             'is_approved' => $this->is_approved,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'creative' => new UserResource($this->whenLoaded('creative')),
+            'creative' => $this->whenLoaded('creative', fn() => new UserResource($this->creative), [
+                'id' => null,
+                'first_name' => 'Deleted',
+                'last_name' => 'User',
+                'username' => 'deleted_user',
+                'profile_picture' => asset('images/default-avatar.png'),
+            ]),
             'photo_categories' => PhotoCategoryResource::collection($this->whenLoaded('photo_categories')),
             'tags' => PhotoTagResource::collection($this->whenLoaded('tags')),
         ];
