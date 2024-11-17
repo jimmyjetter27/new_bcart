@@ -7,13 +7,15 @@ use App\Filament\Resources\UserResource\RelationManagers;
 use Filament\Tables\Actions\Action;
 use App\Models\User;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Log;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
 
 class UserResource extends Resource
 {
@@ -32,9 +34,9 @@ class UserResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('first_name')->required(),
                 Forms\Components\TextInput::make('last_name')->required(),
-                Forms\Components\TextInput::make('username')->required()->unique(ignoreRecord: true),
+                Forms\Components\TextInput::make('username')->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('email')->email()->required()->unique(ignoreRecord: true),
-                Forms\Components\TextInput::make('phone_number')->required()->unique(ignoreRecord: true),
+                Forms\Components\TextInput::make('phone_number')->unique(ignoreRecord: true),
                 Forms\Components\Textarea::make('description')->maxLength(500),
                 Forms\Components\Select::make('type')
                     ->options([
@@ -42,15 +44,15 @@ class UserResource extends Resource
                         'App\Models\Admin' => 'Admin',
                         'App\Models\Creative' => 'Creative',
                         'App\Models\RegularUser' => 'Regular User',
-                    ]),
-                Forms\Components\FileUpload::make('profile_picture')
+                    ])->required(),
+                FileUpload::make('profile_picture')
                     ->label('Avatar')
                     ->image()
                     ->directory('avatars')
                     ->preserveFilenames(false)
 //                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg']) // Explicitly define MIME types
 //                    ->acceptedFileTypes(['image/jpeg', 'image/png'])
-                    ->maxSize(5000)
+//                    ->maxSize(5000)
                     ->saveUploadedFileUsing(function ($file, $state, $set, $get) {
                         $imageStorage = app(\App\Contracts\ImageStorageInterface::class);
 
@@ -77,13 +79,15 @@ class UserResource extends Resource
 
                         return $result['secure_url'];
                     }),
-                Forms\Components\TextInput::make('profile_picture_public_id')
+                TextInput::make('profile_picture_public_id')
                     ->hidden()
-                    ->dehydrated(true), // Ensures the value is saved to the database
+                    ->dehydrated(true)
+                    ->default(''),
 
-                Forms\Components\TextInput::make('profile_picture_url')
+                TextInput::make('profile_picture_url')
                     ->hidden()
-                    ->dehydrated(true), // Ensures the value is saved to the database
+                    ->dehydrated(true)
+                    ->default(''),
 
 
 //                Forms\Components\Select::make('creative_status')
@@ -106,7 +110,7 @@ class UserResource extends Resource
                     ->label('Avatar')
                     ->circular()
                     ->sortable()
-                    ->default(asset('default-avatar.png')),
+                    ->default(asset('/images/default-avatar.png')),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
@@ -165,39 +169,72 @@ class UserResource extends Resource
                     ->modalHeading('Update Creative Status')
                     ->modalDescription('Select the new status for the creative.')
                     ->requiresConfirmation(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('updateAvatar')
-                    ->label('Update Avatar')
-                    ->icon('heroicon-o-camera')
-                    ->action(function (User $record, array $data) {
+                Tables\Actions\EditAction::make()
+                ->icon('heroicon-o-pencil')
+                ->label(''),
+                Tables\Actions\DeleteAction::make()
+                    ->icon('heroicon-o-trash')
+                    ->label('')
+//                    ->color('danger')
+                    ->before(function ($record) {
+                        // Use the ImageStorageInterface to delete the associated image
                         $imageStorage = app(\App\Contracts\ImageStorageInterface::class);
 
-                        // Delete the old avatar if it exists
                         if ($record->profile_picture_public_id) {
                             $imageStorage->delete('avatars/' . $record->profile_picture_public_id);
                         }
-
-                        // Upload the new avatar
-                        $file = $data['profile_picture'];
-                        $result = $imageStorage->upload($file, 'avatars');
-
-                        // Update user's avatar info
-                        $record->update([
-                            'profile_picture_public_id' => $result['public_id'],
-                            'profile_picture_url' => $result['secure_url'],
-                        ]);
-                    })
-                    ->form([
-                        Forms\Components\FileUpload::make('profile_picture')
-                            ->label('Avatar')
-                            ->directory('avatars')
-                            ->image()
-                            ->preserveFilenames(false) // Use random filenames
-                            ->required(),
-                    ])
-                    ->requiresConfirmation()
-                    ->modalHeading('Update User Avatar')
-                    ->modalDescription('Upload a new avatar for the user.'),
+                    }),
+//                Tables\Actions\Action::make('updateAvatar')
+//                    ->label('Update Avatar')
+//                    ->icon('heroicon-o-camera')
+//                    ->action(function (User $record, array $data) {
+//                        $imageStorage = app(\App\Contracts\ImageStorageInterface::class);
+//
+//                        // Validate the uploaded file
+//                        if (!isset($data['profile_picture']) || !$data['profile_picture'] instanceof \Illuminate\Http\UploadedFile) {
+//                            throw new \Exception('Invalid avatar file provided.');
+//                        }
+//
+//                        // Log uploaded file details for debugging
+//                        Log::info('Uploaded File Details', [
+//                            'file_name' => $data['profile_picture']->getClientOriginalName(),
+//                            'file_type' => $data['profile_picture']->getMimeType(),
+//                            'file_size' => $data['profile_picture']->getSize(),
+//                        ]);
+//
+//                        // Delete the old avatar if it exists
+//                        if ($record->profile_picture_public_id) {
+//                            $imageStorage->delete('avatars/' . $record->profile_picture_public_id);
+//                        }
+//
+//                        // Upload the new avatar
+//                        $file = $data['profile_picture'];
+//                        $result = $imageStorage->upload($file, 'avatars');
+//
+//                        // Log Cloudinary response for debugging
+//                        Log::info('Cloudinary Upload Result', $result);
+//
+//                        // Update user's avatar info
+//                        $record->update([
+//                            'profile_picture_public_id' => $result['public_id'],
+//                            'profile_picture_url' => $result['secure_url'],
+//                        ]);
+//
+//                        // Log updated record details for debugging
+//                        Log::info('Updated User Record', $record->toArray());
+//                    })
+//                    ->form([
+//                        Forms\Components\FileUpload::make('profile_picture')
+//                            ->label('Avatar')
+//                            ->image()
+//                            ->directory('avatars')
+//                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml'])
+//                            ->maxSize(5000) // 5MB max size
+//                            ->required(),
+//                    ])
+//                    ->requiresConfirmation()
+//                    ->modalHeading('Update User Avatar')
+//                    ->modalDescription('Upload a new avatar for the user.'),
 
             ])
             ->bulkActions([

@@ -9,6 +9,8 @@
 
     <title>{{ config('app.name') }}</title>
 
+{{--    <link href="{{ asset('assets/images/BcartLogo.jpg') }}" rel="icon">--}}
+
     <style>
         [x-cloak] {
             display: none !important;
