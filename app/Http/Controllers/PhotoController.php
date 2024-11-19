@@ -138,10 +138,15 @@ class PhotoController extends Controller implements HasMiddleware
             ]);
         }
 
+        $photosCollection = Photo::whereIn('id', collect($photos)->pluck('id'))
+            ->with(['creative', 'photo_categories', 'tags'])
+            ->get();
+
+
         return response()->json([
             'success' => true,
             'message' => "Your image(s) have been uploaded successfully. However, you'll need to wait till they are approved to see them on your profile...",
-            'data' => PhotoResource::collection($photos)
+            'data' => PhotoResource::collection($photosCollection)
         ]);
     }
 
