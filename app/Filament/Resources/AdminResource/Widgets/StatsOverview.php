@@ -15,18 +15,22 @@ class StatsOverview extends BaseWidget
     {
         return [
             Stat::make('Users', User::count())
-                ->descriptionIcon('heroicon-m-users'),
+                ->descriptionIcon('heroicon-m-users')
+                ->url('/admin/users'),
 
             Stat::make('Creatives', Creative::count())
-                ->descriptionIcon('heroicon-m-users'),
+                ->descriptionIcon('heroicon-m-users')
+                ->url('/admin/users?tableFilters[type][value]=App%5CModels%5CCreative'),
 
             Stat::make('Photos', Photo::count())
-                ->descriptionIcon('heroicon-m-users'),
+                ->descriptionIcon('heroicon-m-users')
+                ->url('/admin/photos'),
 //                ->url('')
 //                ->url(route('filament.resources.users.index')), // Link to users page
 
             Stat::make('Total Orders', Order::count())
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
+                ->url('/admin/orders')
 //                ->url(route('filament.resources.orders.index')), // Link to orders page
         ];
     }

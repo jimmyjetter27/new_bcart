@@ -2,12 +2,14 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\EditProfile;
 use App\Filament\Resources\AdminResource\Widgets\PendingApprovalsWidget;
 use App\Filament\Resources\AdminResource\Widgets\StatsOverview;
 use App\Filament\Resources\AdminResource\Widgets\UserGrowthChart;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -65,7 +67,11 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->brandLogo('https://res.cloudinary.com/dztfnnvb4/image/upload/v1646563340/Bcart/BcartLogo.jpg')
-            ->profile(Pages\Auth\EditProfile::class);
+            ->brandLogo(asset('/images/BcartLogo.jpg'))
+//            ->profile(Pages\Auth\EditProfile::class);
+            ->profile()
+            ->userMenuItems([
+                'admin/profile' => MenuItem::make()->url(fn (): string => EditProfile::getUrl())
+            ]);
     }
 }

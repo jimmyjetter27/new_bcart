@@ -92,8 +92,8 @@ class UserResource extends Resource
                 TextInput::make('password')
                     ->password()
                     ->label('Password')
-                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-                    ->dehydrated(fn ($state) => filled($state))
+                    ->dehydrateStateUsing(fn($state) => Hash::make($state))
+                    ->dehydrated(fn($state) => filled($state))
                     ->required(fn($record) => $record === null) // Only required for new users
                     ->visible(fn($record) => $record === null || $record !== null) // Show for both create and edit
 //                    ->helperText('Leave blank if you do not want to change the password.'),
@@ -139,7 +139,7 @@ class UserResource extends Resource
             ->actions([
                 Action::make('updateCreativeStatus')
                     ->label('Update Status')
-                    ->icon('heroicon-o-pencil')
+//                    ->icon('heroicon-o-pencil')
                     ->color('gray')
                     ->visible(fn($record) => $record->type === 'App\Models\Creative')
                     ->action(function (User $record, array $data) {
@@ -179,8 +179,8 @@ class UserResource extends Resource
                     ->modalDescription('Select the new status for the creative.')
                     ->requiresConfirmation(),
                 Tables\Actions\EditAction::make()
-                ->icon('heroicon-o-pencil')
-                ->label(''),
+                    ->icon('heroicon-o-pencil')
+                    ->label(''),
                 Tables\Actions\DeleteAction::make()
                     ->icon('heroicon-o-trash')
                     ->label('')
