@@ -43,11 +43,8 @@ class PhotoController extends Controller implements HasMiddleware
             ->allowedFilters(['title'])
             ->latest();
 
-        $categoriesQuery->load(['creative', 'photo_categories']);
-
         // If the user is authenticated and is not an admin or super admin, apply the approved filter
         if (!$user || (!$user->isAdmin() && !$user->isSuperAdmin())) {
-            // Apply the filter to only show approved photos
             $categoriesQuery->where('is_approved', true);
         }
 
@@ -58,6 +55,9 @@ class PhotoController extends Controller implements HasMiddleware
                 ->limit($request->limit ?? 50)
                 ->get();
         }
+
+        // Load relationships after executing the query
+        $categories->load(['creative', 'photo_categories']);
 
         return PhotoResource::collection($categories);
     }
