@@ -18,6 +18,8 @@ class Photo extends Model
 //        'image_path',
         'image_url',
         'image_public_id',
+        'image_width',
+        'image_height',
         'is_approved',
         'photo_category_id'
     ];

@@ -51,10 +51,11 @@ class ImageHelper
 //        return $imageUrl;
 //    }
 
-    public function applyCloudinaryWatermark(string $publicId, string $watermarkPublicId = null)
+
+    public function applyCloudinaryWatermark(string $publicId, int $width, int $height, string $watermarkPublicId = null)
     {
         // Define the default watermark if none is provided
-        $watermarkPublicId = $watermarkPublicId ?? 'Bcart/hppz3vr28ml0pzkr5uov';
+        $watermarkPublicId = $watermarkPublicId ?? 'Bcart:hppz3vr28ml0pzkr5uov';
 
         // Replace '/' with ':' in the watermark public_id for the overlay
         $overlayPublicId = str_replace('/', ':', $watermarkPublicId);
@@ -62,40 +63,40 @@ class ImageHelper
         // Ensure base image public_id includes the folder
         $baseImagePublicId = 'creative_uploads/' . $publicId;
 
+        // Adjust the watermark size and spacing
+        $gridSize = 4; // Reduces number of watermarks
+        $watermarkSize = max($width, $height) / $gridSize;
+        $cols = ceil($width / $watermarkSize);
+        $rows = ceil($height / $watermarkSize);
+
         // Start with the base image
         $image = $this->cloudinary->image($baseImagePublicId)
             ->deliveryType('authenticated')
             ->version($this->getImageVersion($baseImagePublicId))
             ->signUrl();
 
-        // Define overlay positions with smaller offsets to fit within image boundaries
-        $positions = [
-            ['x' => -350, 'y' => -350], ['x' => 0, 'y' => -350], ['x' => 350, 'y' => -350],
-//            ['x' => -300, 'y' => 0],    ['x' => 0, 'y' => 0],    ['x' => 300, 'y' => 0],
-            ['x' => -350, 'y' => 350],  ['x' => 0, 'y' => 350],  ['x' => 350, 'y' => 350]
-        ];
+        // Distribute watermarks with proper spacing
+        for ($row = 0; $row < $rows; $row++) {
+            for ($col = 0; $col < $cols; $col++) {
+                $xOffset = round(($col * $watermarkSize) - ($width / 2) + ($watermarkSize / 2));
+                $yOffset = round(($row * $watermarkSize) - ($height / 2) + ($watermarkSize / 2));
 
-        // Apply each overlay with diagonal rotation, adjusted size, and offset
-        foreach ($positions as $position) {
-            $image->addTransformation([
-                'overlay' => $overlayPublicId,
-                'gravity' => 'center',
-                'x'       => $position['x'],
-                'y'       => $position['y'],
-                'opacity' => 30,       // Adjust for subtlety
-                'angle'   => 45,       // Diagonal rotation
-                'width'   => 0.10,     // Smaller size for logos
-                'flags'   => 'relative',
-                'crop'    => 'scale',
-            ]);
+                $image->addTransformation([
+                    'overlay' => $overlayPublicId,
+                    'gravity' => 'center',
+                    'x'       => $xOffset,
+                    'y'       => $yOffset,
+                    'opacity' => 30,    // Adjust for visibility
+                    'angle'   => 45,    // Rotate the watermark
+                    'width'   => 0.2,   // Adjust size of watermark relative to image
+                    'flags'   => 'relative',
+                    'crop'    => 'scale',
+                ]);
+            }
         }
 
-        // Generate and return the URL
-        $imageUrl = $image->toUrl();
-
-        return $imageUrl;
+        return $image->toUrl();
     }
-
 
 
 //    public function applyCloudinaryWatermark(string $publicId, string $watermarkPublicId = null)

@@ -102,6 +102,8 @@ class PhotoController extends Controller implements HasMiddleware
                     ], 500);
                 }
 
+                $imageDimensions = getimagesize($uploadedFile->getRealPath());
+
                 // Save the photo
                 $photo = Photo::create([
                     'user_id' => auth()->id(),
@@ -111,6 +113,8 @@ class PhotoController extends Controller implements HasMiddleware
                     'price' => $request->input('price'),  // Optional price
                     'image_url' => $result['secure_url'],
                     'image_public_id' => $result['public_id'],
+                    'image_width' => $imageDimensions[0],
+                    'image_height' => $imageDimensions[1],
                     'is_approved' => false
                 ]);
 
@@ -196,9 +200,14 @@ class PhotoController extends Controller implements HasMiddleware
             $uploadedFile = $request->file('image');
             $result = $imageStorage->upload($uploadedFile, 'creative_uploads', null, true);
 
+            // Get new image dimensions
+            $imageDimensions = getimagesize($uploadedFile->getRealPath());
+
             // Update the image details in the database
             $photo->image_url = $result['secure_url'];
             $photo->image_public_id = $result['public_id'];
+            $photo->image_width = $imageDimensions[0];
+            $photo->image_height = $imageDimensions[1];
         }
 
         // Save the updated photo record

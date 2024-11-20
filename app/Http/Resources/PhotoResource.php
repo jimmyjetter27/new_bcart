@@ -18,6 +18,10 @@ class PhotoResource extends JsonResource
     public function toArray(Request $request): array
     {
         $user = auth()->user();
+
+        $rowSpan = $this->image_height > $this->image_width ? 2 : 1;
+        $colSpan = $this->image_width > $this->image_height ? 2 : 1;
+
         $isUploader = $user && $user->id === $this->user_id;
         $hasPurchased = $user ? $this->hasPurchasedPhoto($user->id, $this->id) : false;
 
@@ -31,6 +35,8 @@ class PhotoResource extends JsonResource
             'description' => $this->description,
             'price' => $this->price,
             'image_url' => $imageUrl,
+            'row_span' => $rowSpan,
+            'col_span' => $colSpan,
             'is_approved' => $this->is_approved,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
@@ -72,7 +78,8 @@ class PhotoResource extends JsonResource
         } elseif ($isUploader || $hasPurchased) {
             return $imageHelper->getSignedImageUrl($this->image_public_id); // Signed URL for owner/purchased
         } else {
-            return $imageHelper->applyCloudinaryWatermark($this->image_public_id); // Watermarked for others
+            return $this->applyWatermark();
+//            return $imageHelper->applyCloudinaryWatermark($this->image_public_id, $this->image_width, $this->image_height);
         }
     }
 
@@ -87,8 +94,9 @@ class PhotoResource extends JsonResource
         $imageHelper = app(ImageHelper::class);
 
         if ($this->isStoredInCloudinary()) {
+//            dd($this->image_width);
             // Use the correct base image public_id including the folder
-            return $imageHelper->applyCloudinaryWatermark($this->image_public_id);
+            return $imageHelper->applyCloudinaryWatermark($this->image_public_id, $this->image_width, $this->image_height);
         }
 
         return $imageHelper->applyLocalWatermark($this->image_url)->encode('data-url');
