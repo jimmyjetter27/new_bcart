@@ -14,7 +14,7 @@ class ImageHelper
         $this->cloudinary = new Cloudinary([
             'cloud' => [
                 'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-                'api_key'    => env('CLOUDINARY_API_KEY'),
+                'api_key' => env('CLOUDINARY_API_KEY'),
                 'api_secret' => env('CLOUDINARY_API_SECRET'),
             ],
         ]);
@@ -52,6 +52,51 @@ class ImageHelper
 //    }
 
 
+//    public function applyCloudinaryWatermark(string $publicId, int $width, int $height, string $watermarkPublicId = null)
+//    {
+//        // Define the default watermark if none is provided
+//        $watermarkPublicId = $watermarkPublicId ?? 'Bcart:hppz3vr28ml0pzkr5uov';
+//
+//        // Replace '/' with ':' in the watermark public_id for the overlay
+//        $overlayPublicId = str_replace('/', ':', $watermarkPublicId);
+//
+//        // Ensure base image public_id includes the folder
+//        $baseImagePublicId = 'creative_uploads/' . $publicId;
+//
+//        // Adjust the watermark size and spacing
+//        $gridSize = 4; // Reduces number of watermarks
+//        $watermarkSize = max($width, $height) / $gridSize;
+//        $cols = ceil($width / $watermarkSize);
+//        $rows = ceil($height / $watermarkSize);
+//
+//        // Start with the base image
+//        $image = $this->cloudinary->image($baseImagePublicId)
+//            ->deliveryType('authenticated')
+//            ->version($this->getImageVersion($baseImagePublicId))
+//            ->signUrl();
+//
+//        // Distribute watermarks with proper spacing
+//        for ($row = 0; $row < $rows; $row++) {
+//            for ($col = 0; $col < $cols; $col++) {
+//                $xOffset = round(($col * $watermarkSize) - ($width / 2) + ($watermarkSize / 2));
+//                $yOffset = round(($row * $watermarkSize) - ($height / 2) + ($watermarkSize / 2));
+//
+//                $image->addTransformation([
+//                    'overlay' => $overlayPublicId,
+//                    'gravity' => 'center',
+//                    'x'       => $xOffset,
+//                    'y'       => $yOffset,
+//                    'opacity' => 30,    // Adjust for visibility
+//                    'angle'   => 45,    // Rotate the watermark
+//                    'width'   => 0.2,   // Adjust size of watermark relative to image
+//                    'flags'   => 'relative',
+//                    'crop'    => 'scale',
+//                ]);
+//            }
+//        }
+//
+//        return $image->toUrl();
+//    }
     public function applyCloudinaryWatermark(string $publicId, int $width, int $height, string $watermarkPublicId = null)
     {
         // Define the default watermark if none is provided
@@ -64,7 +109,7 @@ class ImageHelper
         $baseImagePublicId = 'creative_uploads/' . $publicId;
 
         // Adjust the watermark size and spacing
-        $gridSize = 4; // Reduces number of watermarks
+        $gridSize = 3; // Reduces number of watermarks
         $watermarkSize = max($width, $height) / $gridSize;
         $cols = ceil($width / $watermarkSize);
         $rows = ceil($height / $watermarkSize);
@@ -99,47 +144,6 @@ class ImageHelper
     }
 
 
-//    public function applyCloudinaryWatermark(string $publicId, string $watermarkPublicId = null)
-//    {
-//        // Define the default watermark if none is provided
-//        $watermarkPublicId = $watermarkPublicId ?? 'Bcart/hppz3vr28ml0pzkr5uov';
-//
-//        // Replace '/' with ':' in the watermark public_id for the overlay
-//        $overlayPublicId = str_replace('/', ':', $watermarkPublicId);
-//
-//        // Ensure base image public_id includes the folder
-//        $baseImagePublicId = 'creative_uploads/' . $publicId;
-//
-//        // Define the overlay transformation
-//        $overlayTransformation = [
-//            'overlay' => $overlayPublicId,
-//            'opacity' => 50,
-//            'width'   => 0.3,
-//            'flags'   => 'relative',
-//            'crop'    => 'scale',
-//        ];
-//
-//        // Define positions for the watermarks
-//        $positions = [
-//            ['gravity' => 'north_west', 'x' => 10, 'y' => 10],
-//            ['gravity' => 'north_east', 'x' => 7, 'y' => 5],
-//            ['gravity' => 'south_west', 'x' => 10, 'y' => 10],
-//            ['gravity' => 'south_east', 'x' => 2, 'y' => 9],
-//        ];
-//
-//        // Start with the base image
-//        $image = $this->cloudinary->image($baseImagePublicId);
-//
-//        // Apply each overlay with its position
-//        foreach ($positions as $position) {
-//            $image = $image->addTransformation(array_merge($overlayTransformation, $position));
-//        }
-//
-//        // Generate the URL
-//        $imageUrl = $image->toUrl();
-//
-//        return $imageUrl;
-//    }
 
     public function getSignedImageUrl(string $publicId)
     {
@@ -167,7 +171,7 @@ class ImageHelper
         try {
             // Fetch the resource details to get the version
             $resource = $this->cloudinary->adminApi()->asset($baseImagePublicId, [
-                'type'          => 'authenticated', // Ensure the type matches the upload type
+                'type' => 'authenticated', // Ensure the type matches the upload type
                 'resource_type' => 'image',         // Specify the resource type
             ]);
             return $resource['version'];
@@ -181,7 +185,6 @@ class ImageHelper
             throw $e;
         }
     }
-
 
 
 }
