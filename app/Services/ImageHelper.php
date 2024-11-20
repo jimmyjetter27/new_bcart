@@ -109,10 +109,11 @@ class ImageHelper
         $baseImagePublicId = 'creative_uploads/' . $publicId;
 
         // Adjust the watermark size and spacing
-        $gridSize = 3; // Reduces number of watermarks
+        $gridSize = 3; // Controls the number of watermarks
         $watermarkSize = max($width, $height) / $gridSize;
-        $cols = ceil($width / $watermarkSize);
-        $rows = ceil($height / $watermarkSize);
+
+        $cols = floor($width / $watermarkSize); // Number of columns
+        $rows = floor($height / $watermarkSize); // Number of rows
 
         // Start with the base image
         $image = $this->cloudinary->image($baseImagePublicId)
@@ -121,10 +122,15 @@ class ImageHelper
             ->signUrl();
 
         // Distribute watermarks with proper spacing
-        for ($row = 0; $row < $rows; $row++) {
-            for ($col = 0; $col < $cols; $col++) {
+        for ($row = 0; $row <= $rows; $row++) {
+            for ($col = 0; $col <= $cols; $col++) {
                 $xOffset = round(($col * $watermarkSize) - ($width / 2) + ($watermarkSize / 2));
                 $yOffset = round(($row * $watermarkSize) - ($height / 2) + ($watermarkSize / 2));
+
+                // Ensure the watermark is within the bounds of the image
+                if ($xOffset < -($width / 2) || $xOffset > ($width / 2) || $yOffset < -($height / 2) || $yOffset > ($height / 2)) {
+                    continue; // Skip if out of bounds
+                }
 
                 $image->addTransformation([
                     'overlay' => $overlayPublicId,
@@ -133,7 +139,7 @@ class ImageHelper
                     'y'       => $yOffset,
                     'opacity' => 30,    // Adjust for visibility
                     'angle'   => 45,    // Rotate the watermark
-                    'width'   => 0.2,   // Adjust size of watermark relative to image
+                    'width'   => 0.15,  // Reduce size of watermark relative to image
                     'flags'   => 'relative',
                     'crop'    => 'scale',
                 ]);
