@@ -97,6 +97,7 @@ class ImageHelper
     }
 
 
+
 //    public function applyCloudinaryWatermark(string $publicId, string $watermarkPublicId = null)
 //    {
 //        // Define the default watermark if none is provided

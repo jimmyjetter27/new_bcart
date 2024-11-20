@@ -9,7 +9,6 @@
         "cloudinary/cloudinary_php": "^2.14",
         "filament/filament": "^3.2",
         "filament/widgets": "^3.2",
-        "intervention/image": "^3.8",
         "laravel/breeze": "^2.2",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
