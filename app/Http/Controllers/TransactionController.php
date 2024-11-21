@@ -52,6 +52,57 @@ class TransactionController extends Controller
         //
     }
 
+//    public function paystackCallback(Request $request)
+//    {
+//        $reference = $request->query('reference');
+//        Log::info('Paystack callback received for reference: ' . $reference);
+//
+//        $paymentService = app(PayStackService::class);
+//        $verificationResult = $paymentService->verifyPayment($reference);
+//
+//        if ($verificationResult['status'] && $verificationResult['data']['status'] === 'success') {
+//            $transaction = Transaction::where('transaction_id', $reference)->first();
+//
+//            if ($transaction) {
+//                $transaction->update([
+//                    'status' => 'completed',
+//                    'payment_method' => $verificationResult['data']['channel'],
+//                ]);
+//
+//                // Update the associated order and assign photos to the user
+//                $order = $transaction->order;
+//                $order->update(['transaction_status' => 'completed']);
+//
+//                foreach ($order->orderables as $orderable) {
+//                    Orderable::create([
+//                        'order_id' => $order->id,
+//                        'orderable_id' => $orderable->orderable_id,
+//                        'orderable_type' => Photo::class,
+//                    ]);
+//                }
+//
+//                return redirect()->to(env('FRONTEND_URL') . '/search?message=Payment Successful');
+//            }
+//
+//            Log::error("Transaction not found for reference: $reference");
+//            return redirect()->to(env('FRONTEND_URL') . '/search?message=Transaction not found');
+//        }
+//
+//        if ($verificationResult['status'] === false || $verificationResult['data']['status'] !== 'success') {
+//            $transaction = Transaction::where('transaction_id', $reference)->first();
+//
+//            if ($transaction) {
+//                $transaction->update(['status' => 'failed']);
+//                $transaction->order->update(['transaction_status' => 'failed']);
+//            }
+//
+//            return redirect()->to(env('FRONTEND_URL') . '/search?message=Payment Failed');
+//        }
+//
+//        Log::error("Unexpected verification response for reference: $reference", $verificationResult);
+//        return redirect()->to(env('FRONTEND_URL') . '/search?message=Unexpected response');
+//    }
+
     public function paystackCallback(Request $request)
     {
         $reference = $request->query('reference');
@@ -64,22 +115,22 @@ class TransactionController extends Controller
             $transaction = Transaction::where('transaction_id', $reference)->first();
 
             if ($transaction) {
+                // Update the transaction status
                 $transaction->update([
                     'status' => 'completed',
                     'payment_method' => $verificationResult['data']['channel'],
                 ]);
 
-                // Update the associated order and assign photos to the user
+                // Update the order status
                 $order = $transaction->order;
                 $order->update(['transaction_status' => 'completed']);
 
-                foreach ($order->orderables as $orderable) {
-                    Orderable::create([
-                        'order_id' => $order->id,
-                        'orderable_id' => $orderable->orderable_id,
-                        'orderable_type' => Photo::class,
-                    ]);
-                }
+                // Attach photos to the order
+                $photoIds = Orderable::where('order_id', $order->id)
+                    ->where('orderable_type', Photo::class)
+                    ->pluck('orderable_id');
+
+                $order->photos()->syncWithoutDetaching($photoIds);
 
                 return redirect()->to(env('FRONTEND_URL') . '/search?message=Payment Successful');
             }
@@ -102,5 +153,6 @@ class TransactionController extends Controller
         Log::error("Unexpected verification response for reference: $reference", $verificationResult);
         return redirect()->to(env('FRONTEND_URL') . '/search?message=Unexpected response');
     }
+
 
 }

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class MigrationController extends Controller
 {
@@ -30,5 +32,17 @@ class MigrationController extends Controller
                 'message' => 'Failed to run migration: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function recreateOrderables()
+    {
+        Schema::dropIfExists('orderables');
+        Schema::create('orderables', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('order_id')->constrained()->onDelete('cascade');
+            $table->morphs('orderable'); // Creates `orderable_id` and `orderable_type`
+            $table->timestamps();
+        });
+
     }
 }

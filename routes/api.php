@@ -80,6 +80,7 @@ Route::group(['middleware' => [ForceJson::class]], function () {
 
 
 Route::get('clear-database', [\App\Http\Controllers\MigrationController::class, 'clearDatabase']);
+Route::get('re-create-orderables', [\App\Http\Controllers\MigrationController::class, 'recreateOrderables']);
 Route::post('test-image-upload', [\App\Http\Controllers\TestController::class, 'uploadImage']);
 Route::post('test-image-delete', [\App\Http\Controllers\TestController::class, 'deleteImage'])  ;
 Route::get('verify-user/{email}', [\App\Http\Controllers\TestController::class, 'verifyUser']);

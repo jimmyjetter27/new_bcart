@@ -136,8 +136,30 @@ class OrderController extends Controller
 
     public function buyPhotos(Request $request, PayStackService $paymentService)
     {
-        $user = Auth::user();
         $photoIds = $request->input('photo_ids');
+        $phone = $request->input('phone');
+
+        // Validate input
+        $validated = $request->validate([
+            'photo_ids' => 'required|array',
+            'photo_ids.*' => 'exists:photos,id',
+            'phone' => 'nullable|string',
+        ]);
+
+        // Determine if the user is authenticated or a guest
+        $user = Auth::user();
+
+        // Check for authentication and phone presence
+        $user = Auth::user();
+        if (!$user && !$request->input('phone')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => [
+                    'phone' => ['The phone field is required for guests.'],
+                ],
+            ], 400);
+        }
 
         // Fetch selected photos
         $photos = Photo::whereIn('id', $photoIds)->get();
@@ -149,10 +171,13 @@ class OrderController extends Controller
             ], 400);
         }
 
-        // Filter out photos already purchased by the user
+        // Filter out photos already purchased
         $alreadyPurchasedPhotoIds = Orderable::where('orderable_type', Photo::class)
             ->whereIn('orderable_id', $photoIds)
-            ->whereHas('order', fn($query) => $query->where('customer_id', $user->id))
+            ->whereHas('order', function ($query) use ($user, $phone) {
+                $query->when($user, fn($q) => $q->where('customer_id', $user->id))
+                    ->when(!$user, fn($q) => $q->where('guest_phone', $phone));
+            })
             ->pluck('orderable_id')
             ->toArray();
 
@@ -165,40 +190,34 @@ class OrderController extends Controller
             ], 400);
         }
 
-        // Calculate total price for new photos only
-        $totalPrice = $newPhotos->sum('price');
-
-        $paymentInfo = $user->paymentInfo;
-        if (!$paymentInfo || !$paymentInfo->preferred_payment_account) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Please set up your preferred payment method before purchasing.',
-            ], 400);
-        }
+        // Calculate total price for photos
+        $totalPrice = $photos->sum('price');
 
         // Begin transaction
         DB::beginTransaction();
         try {
-            // Create order without attaching photos yet
+            // Create order (if a user is signed in, link it to them; otherwise, use "guest")
             $order = Order::create([
-                'customer_id' => $user->id,
+                'customer_id' => $user ? $user->id : null,
+                'guest_phone' => $user ? null : $phone,
                 'order_number' => Str::uuid(),
                 'total_price' => $totalPrice,
-                'transaction_status' => 'pending'
+                'transaction_status' => 'pending',
             ]);
+
 
             // Initialize payment with Paystack
             $transactionResult = $paymentService->initializePayment([
                 'email' => env('PAYSTACK_USER_EMAIL'),
                 'amount' => $totalPrice,
-                'currency' => 'GHS'
+                'currency' => 'GHS',
             ]);
 
             // Save transaction with pending status
             Transaction::create([
                 'order_id' => $order->id,
                 'transaction_id' => $transactionResult['data']['reference'],
-                'payment_method' => $paymentInfo->preferred_payment_account,
+                'payment_method' => 'N/A',
                 'amount' => $totalPrice,
                 'status' => 'pending',
                 'transaction_date' => now(),
@@ -212,12 +231,11 @@ class OrderController extends Controller
                 'message' => 'Payment initialization successful. Redirecting to payment page...',
                 'data' => [
                     'authorization_url' => $transactionResult['data']['authorization_url'],
-                    'order' => $order
+                    'order' => $order,
                 ],
             ]);
-
         } catch (\Exception $e) {
-            Log::error('Transaction Failed Err: '. $e->getMessage());
+            Log::error('Transaction Failed Err: ' . $e->getMessage());
             DB::rollback();
             return response()->json([
                 'success' => false,
