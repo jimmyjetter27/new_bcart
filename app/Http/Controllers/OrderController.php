@@ -146,11 +146,8 @@ class OrderController extends Controller
             'phone' => 'nullable|string',
         ]);
 
-        // Determine if the user is authenticated or a guest
-        $user = Auth::user();
-
         // Check for authentication and phone presence
-        $user = Auth::user();
+        $user = Auth::guard('sanctum')->user();
         if (!$user && !$request->input('phone')) {
             return response()->json([
                 'success' => false,
