@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Photo extends Model
 {
@@ -39,7 +40,6 @@ class Photo extends Model
     {
         return $this->morphToMany(Order::class, 'orderable', 'orderables');
     }
-
 
     public function hasPurchasedPhoto($userId)
     {
@@ -81,5 +81,19 @@ class Photo extends Model
         return $this->belongsToMany(PhotoTag::class, 'photo_tag', 'photo_id', 'photo_tag_id');
     }
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope('approvedFilter', function (Builder $builder) {
+            $user = auth('sanctum')->user();
+
+            // Apply the filter only if the user is not an admin, super admin, or the creative who uploaded the image
+            if (!$user || (!$user->isAdmin() && !$user->isSuperAdmin())) {
+                $builder->where('is_approved', true)
+                    ->orWhere('user_id', $user?->id); // Allow the creative to see their own unapproved images
+            }
+        });
+    }
 
 }
