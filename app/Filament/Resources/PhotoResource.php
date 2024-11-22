@@ -50,6 +50,7 @@ class PhotoResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('approved')->query(fn($query) => $query->where('is_approved', true)),
             ])
+            ->defaultSort('created_at', 'desc')
             ->actions([
 //                Tables\Actions\EditAction::make()->icon('heroicon-o-pencil'),
                 Action::make('approve')
