@@ -383,29 +383,31 @@ class PhotoController extends Controller implements HasMiddleware
             ],
         ]);
     }
-
-    public function listPurchasedPhotos()
+    public function listPurchasedPhotos(Request $request)
     {
         $user = Auth::guard('sanctum')->user();
+        $guestIdentifier = $user ? null : $request->ip() . '-' . md5($request->header('User-Agent'));
 
-        // Ensure the user is authenticated
-        if (!$user) {
+        if (!$user && !$guestIdentifier) {
             return response()->json([
                 'success' => false,
                 'message' => 'User not authenticated.',
             ], 401);
         }
 
-        // Retrieve all photos associated with completed orders
-        $photos = Photo::whereHas('orders', function ($query) use ($user) {
-            $query->where('customer_id', $user->id)
-                ->where('transaction_status', 'completed');
-        })->paginate();
+        $photos = Photo::whereHas('orders', function ($query) use ($user, $guestIdentifier) {
+            $query->where('transaction_status', 'completed')
+                ->when($user, function ($q) use ($user) {
+                    $q->where('customer_id', $user->id);
+                }, function ($q) use ($guestIdentifier) {
+                    $q->where('guest_identifier', $guestIdentifier);
+                });
+        })
+            ->with(['creative', 'photo_categories'])
+            ->paginate();
 
-        $photos->load(['creative', 'photo_categories']);
         return PhotoResource::collection($photos);
     }
-
     public function downloadPhoto(Photo $photo)
     {
         $user = Auth::user();

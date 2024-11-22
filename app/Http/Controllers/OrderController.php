@@ -163,14 +163,18 @@ class OrderController extends Controller
             ], 400);
         }
 
-        // Check if photos have already been purchased
-        $alreadyPurchasedPhotoIds = Photo::whereHas('orders', function ($query) use ($user, $guestIdentifier) {
-            $query->where('transaction_status', 'completed')
-                ->when($user, fn($q) => $q->where('customer_id', $user->id))
-                ->when(!$user, fn($q) => $q->where('guest_identifier', $guestIdentifier));
-        })->pluck('id')->toArray();
+        $selectedPhotoIds = $photos->pluck('id')->toArray();
 
-        $newPhotos = $photos->filter(fn($photo) => !in_array($photo->id, $alreadyPurchasedPhotoIds));
+        // Check if photos have already been purchased
+        $alreadyPurchasedPhotoIds = Photo::whereIn('id', $selectedPhotoIds)
+            ->whereHas('orders', function ($query) use ($user, $guestIdentifier) {
+                $query->where('transaction_status', 'completed')
+                    ->when($user, fn($q) => $q->where('customer_id', $user->id))
+                    ->when(!$user, fn($q) => $q->where('guest_identifier', $guestIdentifier));
+            })->pluck('id')->toArray();
+
+        $newPhotoIds = array_diff($selectedPhotoIds, $alreadyPurchasedPhotoIds);
+        $newPhotos = $photos->whereIn('id', $newPhotoIds);
 
         if ($newPhotos->isEmpty()) {
             return response()->json([

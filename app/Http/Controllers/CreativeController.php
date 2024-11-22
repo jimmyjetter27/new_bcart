@@ -132,12 +132,23 @@ class CreativeController extends Controller implements HasMiddleware
         ];
     }
 
+
     public function search(Request $request)
     {
+        $keyword = $request->input('keyword');
+
         $users = QueryBuilder::for(User::class)
             ->where('type', Creative::class)
+            ->with([
+                'pricing',
+                'paymentInfo',
+                'creative_categories',
+                'photos' => function ($query) {
+                    $query->limit(5);
+                }
+            ])
             ->allowedFilters([
-                AllowedFilter::custom('keyword', new UserInsensitiveLikeFilter),
+                AllowedFilter::custom('keyword', new UserInsensitiveLikeFilter($keyword)),
             ])
             ->paginate(15);
 
@@ -149,19 +160,11 @@ class CreativeController extends Controller implements HasMiddleware
             ]);
         }
 
-        $users->load([
-            'pricing',
-            'paymentInfo',
-            'creative_categories',
-            'photos' => function ($query) {
-                $query->limit(5);
-            }
-        ]);
-
         return response()->json([
             'success' => true,
             'message' => 'Search results fetched successfully.',
             'data' => UserResource::collection($users)
         ]);
     }
+
 }
