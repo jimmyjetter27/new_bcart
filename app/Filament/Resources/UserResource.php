@@ -177,7 +177,13 @@ class UserResource extends Resource
                     ])
                     ->modalHeading('Update Creative Status')
                     ->modalDescription('Select the new status for the creative.')
-                    ->requiresConfirmation(),
+                    ->requiresConfirmation()
+                    ->action(function (User $record, array $data) {
+//                        Log::info('Form data:', $data); // Debug the form data
+                        $record->update([
+                            'creative_status' => $data['creative_status'],
+                        ]);
+                    }),
                 Tables\Actions\EditAction::make()
                     ->icon('heroicon-o-pencil')
                     ->label(''),
