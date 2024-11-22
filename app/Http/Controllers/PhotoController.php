@@ -43,11 +43,6 @@ class PhotoController extends Controller implements HasMiddleware
             ->allowedFilters(['title'])
             ->latest();
 
-        // If the user is authenticated and is not an admin or super admin, apply the approved filter
-        if (!$user || (!$user->isAdmin() && !$user->isSuperAdmin())) {
-            $categoriesQuery->where('is_approved', true);
-        }
-
         if ($request->query('paginate') && $request->query('paginate') === 'true') {
             $categories = $categoriesQuery->paginate($request->per_page ?? 10);
         } else {
