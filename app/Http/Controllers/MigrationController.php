@@ -33,16 +33,4 @@ class MigrationController extends Controller
             ], 500);
         }
     }
-
-    public function recreateOrderables()
-    {
-        Schema::dropIfExists('orderables');
-        Schema::create('orderables', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('order_id')->constrained()->onDelete('cascade');
-            $table->morphs('orderable'); // Creates `orderable_id` and `orderable_type`
-            $table->timestamps();
-        });
-
-    }
 }

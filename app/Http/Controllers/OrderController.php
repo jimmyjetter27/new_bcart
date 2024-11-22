@@ -137,26 +137,21 @@ class OrderController extends Controller
     public function buyPhotos(Request $request, PayStackService $paymentService)
     {
         $photoIds = $request->input('photo_ids');
-        $phone = $request->input('phone');
+        $user = Auth::guard('sanctum')->user();
+
+        // Generate a guest identifier for unauthenticated users
+        $guestIdentifier = $request->ip() . '-' . md5($request->header('User-Agent'));
+//        dd($guestIdentifier);
+
+        if (!$user && !$guestIdentifier) {
+            session(['guest_identifier' => $guestIdentifier]);
+        }
 
         // Validate input
         $validated = $request->validate([
             'photo_ids' => 'required|array',
             'photo_ids.*' => 'exists:photos,id',
-            'phone' => 'nullable|string',
         ]);
-
-        // Check for authentication and phone presence
-        $user = Auth::guard('sanctum')->user();
-        if (!$user && !$request->input('phone')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => [
-                    'phone' => ['The phone field is required for guests.'],
-                ],
-            ], 400);
-        }
 
         // Fetch selected photos
         $photos = Photo::whereIn('id', $photoIds)->get();
@@ -168,15 +163,12 @@ class OrderController extends Controller
             ], 400);
         }
 
-        // Filter out photos already purchased
-        $alreadyPurchasedPhotoIds = Orderable::where('orderable_type', Photo::class)
-            ->whereIn('orderable_id', $photoIds)
-            ->whereHas('order', function ($query) use ($user, $phone) {
-                $query->when($user, fn($q) => $q->where('customer_id', $user->id))
-                    ->when(!$user, fn($q) => $q->where('guest_phone', $phone));
-            })
-            ->pluck('orderable_id')
-            ->toArray();
+        // Check if photos have already been purchased
+        $alreadyPurchasedPhotoIds = Photo::whereHas('orders', function ($query) use ($user, $guestIdentifier) {
+            $query->where('transaction_status', 'completed')
+                ->when($user, fn($q) => $q->where('customer_id', $user->id))
+                ->when(!$user, fn($q) => $q->where('guest_identifier', $guestIdentifier));
+        })->pluck('id')->toArray();
 
         $newPhotos = $photos->filter(fn($photo) => !in_array($photo->id, $alreadyPurchasedPhotoIds));
 
@@ -193,15 +185,17 @@ class OrderController extends Controller
         // Begin transaction
         DB::beginTransaction();
         try {
-            // Create order (if a user is signed in, link it to them; otherwise, use "guest")
+            // Create order
             $order = Order::create([
                 'customer_id' => $user ? $user->id : null,
-                'guest_phone' => $user ? null : $phone,
+                'guest_identifier' => $guestIdentifier,
                 'order_number' => Str::uuid(),
                 'total_price' => $totalPrice,
                 'transaction_status' => 'pending',
             ]);
 
+            // Attach photos to the order
+            $order->photos()->sync($photoIds);
 
             // Initialize payment with Paystack
             $transactionResult = $paymentService->initializePayment([

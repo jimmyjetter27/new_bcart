@@ -106,7 +106,8 @@ class TransactionController extends Controller
     public function paystackCallback(Request $request)
     {
         $reference = $request->query('reference');
-        Log::info('Paystack callback received for reference: ' . $reference);
+//        Log::info('Paystack callback received for reference: ' . $reference);
+        Log::info('Paystack callback response: '. json_encode($request->all()));
 
         $paymentService = app(PayStackService::class);
         $verificationResult = $paymentService->verifyPayment($reference);
@@ -125,13 +126,8 @@ class TransactionController extends Controller
                 $order = $transaction->order;
                 $order->update(['transaction_status' => 'completed']);
 
-                // Attach photos to the order
-                $photoIds = Orderable::where('order_id', $order->id)
-                    ->where('orderable_type', Photo::class)
-                    ->pluck('orderable_id');
-
-                $order->photos()->syncWithoutDetaching($photoIds);
-
+                // Photos are already attached during the order creation.
+                // Ensure the status reflects successful transaction completion.
                 return redirect()->to(env('FRONTEND_URL') . '/search?message=Payment Successful');
             }
 

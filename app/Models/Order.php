@@ -14,6 +14,7 @@ class Order extends Model
 
     protected $fillable = [
         'customer_id',
+        'guest_identifier',
         'order_number',
         'total_price',
         'transaction_status'
@@ -24,15 +25,25 @@ class Order extends Model
 //        return $this->morphToMany(Photo::class, 'orderable');
 //    }
 
-    public function orderables(): MorphToMany
+//    public function orderables(): MorphToMany
+//    {
+//        return $this->morphToMany(Photo::class, 'orderable', 'orderables');
+//    }
+
+    public function orderables()
     {
-        return $this->morphToMany(Photo::class, 'orderable', 'orderables');
+        return $this->hasMany(Orderable::class, 'order_id');
     }
 
 
+//    public function photos()
+//    {
+//        return $this->morphedByMany(Photo::class, 'orderable', 'orderables');
+//    }
+
     public function photos()
     {
-        return $this->morphedByMany(Photo::class, 'orderable', 'orderables');
+        return $this->morphedByMany(Photo::class, 'orderable', 'orderables', 'order_id', 'orderable_id');
     }
 
 
