@@ -46,8 +46,6 @@ class Order extends Model
         return $this->morphedByMany(Photo::class, 'orderable', 'orderables', 'order_id', 'orderable_id');
     }
 
-
-
     public function customer()
     {
         return $this->belongsTo(User::class, 'customer_id');

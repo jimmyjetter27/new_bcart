@@ -402,6 +402,7 @@ class PhotoController extends Controller implements HasMiddleware
                 ->where('transaction_status', 'completed');
         })->paginate();
 
+        $photos->load(['creative', 'photo_categories']);
         return PhotoResource::collection($photos);
     }
 

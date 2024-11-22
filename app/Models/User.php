@@ -135,13 +135,29 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 
     public function orders()
     {
-        return $this->hasMany(Order::class, 'customer_id', 'id');
+        return $this->hasMany(Order::class, 'customer_id');
     }
+
 
     public function photos()
     {
         return $this->hasMany(Photo::class);
     }
+
+    public function purchasedPhotos()
+    {
+        return $this->hasManyThrough(
+            Photo::class,
+            Order::class,
+            'customer_id', // Foreign key on the orders table...
+            'id',          // Foreign key on the photos table...
+            'id',          // Local key on the users table...
+            'orderable_id' // Local key on the orders table...
+        )
+            ->where('orders.transaction_status', 'completed')
+            ->where('orderables.orderable_type', Photo::class);
+    }
+
 
     public function creative_categories()
     {

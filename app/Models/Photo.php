@@ -36,10 +36,24 @@ class Photo extends Model
         return !str_contains($this->image_public_id, '.');
     }
 
+//    public function orders()
+//    {
+//        return $this->morphedByMany(Order::class, 'orderable', 'orderables', 'orderable_id', 'order_id');
+//    }
+
     public function orders()
     {
-        return $this->morphedByMany(Order::class, 'orderable', 'orderables', 'orderable_id', 'order_id');
+        return $this->morphToMany(Order::class, 'orderable', 'orderables', 'orderable_id', 'order_id');
     }
+
+
+//    public function orders()
+//    {
+//        return $this->morphedByMany(Order::class, 'orderable', 'orderables', 'orderable_id', 'order_id')
+//            ->where('orderables.orderable_type', '=', self::class);
+//    }
+
+
 
     public function hasPurchasedPhoto($userId)
     {
@@ -90,8 +104,10 @@ class Photo extends Model
 
             // Apply the filter only if the user is not an admin, super admin, or the creative who uploaded the image
             if (!$user || (!$user->isAdmin() && !$user->isSuperAdmin())) {
-                $builder->where('is_approved', true)
-                    ->orWhere('user_id', $user?->id); // Allow the creative to see their own unapproved images
+                $builder->where(function ($query) use ($user) {
+                    $query->where('is_approved', true)
+                        ->orWhere('user_id', $user?->id); // Allow the creative to see their own unapproved images
+                });
             }
         });
     }
