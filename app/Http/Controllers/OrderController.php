@@ -188,7 +188,7 @@ class OrderController extends Controller
             // Create order
             $order = Order::create([
                 'customer_id' => $user ? $user->id : null,
-                'guest_identifier' => $guestIdentifier,
+                'guest_identifier' => $user ? null : $guestIdentifier,
                 'order_number' => Str::uuid(),
                 'total_price' => $totalPrice,
                 'transaction_status' => 'pending',
