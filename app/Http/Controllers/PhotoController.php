@@ -316,14 +316,13 @@ class PhotoController extends Controller implements HasMiddleware
 
     public function search(Request $request)
     {
-
         $photos = QueryBuilder::for(Photo::class)
             ->allowedFilters([
                 AllowedFilter::custom('keyword', new PhotoInsensitiveLikeFilter),
             ])
             ->where('is_approved', true)
+            ->with(['creative', 'tags', 'photo_categories'])
             ->paginate(15);
-
 
         if ($photos->isEmpty()) {
             return response()->json([
@@ -333,16 +332,9 @@ class PhotoController extends Controller implements HasMiddleware
             ]);
         }
 
-        $photos->getCollection()->load('creative', 'tags');
-
-//        return response()->json([
-//            'success' => true,
-//            'message' => 'Search results fetched successfully.',
-//            'data' => PhotoResource::collection($photos)
-//        ]);
-
         return PhotoResource::collection($photos);
     }
+
 
     public function getUserPhotos(Request $request, $userId)
     {
