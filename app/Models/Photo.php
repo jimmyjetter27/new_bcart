@@ -38,7 +38,7 @@ class Photo extends Model
 
     public function orders()
     {
-        return $this->morphToMany(Order::class, 'orderable', 'orderables');
+        return $this->morphedByMany(Order::class, 'orderable', 'orderables', 'orderable_id', 'order_id');
     }
 
     public function hasPurchasedPhoto($userId)

@@ -73,7 +73,7 @@ class TestController extends Controller
         $payload = [
             'email' => env('PAYSTACK_USER_EMAIL'),
             'amount' => $request->amount,
-//            'mobile_money' => ['phone' => '0551234987', 'provider' => 'mtn'],
+            'mobile_money' => ['phone' => '0548984119', 'provider' => 'mtn'],
             'currency' => 'GHS'
         ];
         return $service->initializePayment($payload);

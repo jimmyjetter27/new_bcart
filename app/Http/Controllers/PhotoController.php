@@ -386,7 +386,15 @@ class PhotoController extends Controller implements HasMiddleware
 
     public function listPurchasedPhotos()
     {
-        $user = Auth::user();
+        $user = Auth::guard('sanctum')->user();
+
+        // Ensure the user is authenticated
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated.',
+            ], 401);
+        }
 
         // Retrieve all photos associated with completed orders
         $photos = Photo::whereHas('orders', function ($query) use ($user) {
@@ -395,11 +403,6 @@ class PhotoController extends Controller implements HasMiddleware
         })->paginate();
 
         return PhotoResource::collection($photos);
-//        return response()->json([
-//            'success' => true,
-//            'message' => 'Purchased photos retrieved successfully.',
-//            'data' => PhotoResource::collection($photos)
-//        ]);
     }
 
     public function downloadPhoto(Photo $photo)
