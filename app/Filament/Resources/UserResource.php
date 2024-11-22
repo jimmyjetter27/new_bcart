@@ -142,28 +142,28 @@ class UserResource extends Resource
 //                    ->icon('heroicon-o-pencil')
                     ->color('gray')
                     ->visible(fn($record) => $record->type === 'App\Models\Creative')
-                    ->action(function (User $record, array $data) {
-                        if (!isset($data['profile_picture']) || !is_file($data['profile_picture'])) {
-                            throw new \Exception('Invalid avatar file provided.');
-                        }
-
-                        $imageStorage = app(\App\Contracts\ImageStorageInterface::class);
-
-                        // Delete the old avatar if it exists
-                        if ($record->profile_picture_public_id) {
-                            $imageStorage->delete('avatars/' . $record->profile_picture_public_id);
-                        }
-
-                        // Upload the new avatar
-                        $file = $data['profile_picture'];
-                        $result = $imageStorage->upload($file, 'avatars');
-
-                        // Update user's avatar info
-                        $record->update([
-                            'profile_picture_public_id' => $result['public_id'],
-                            'profile_picture_url' => $result['secure_url'],
-                        ]);
-                    })
+//                    ->action(function (User $record, array $data) {
+//                        if (!isset($data['profile_picture']) || !is_file($data['profile_picture'])) {
+//                            throw new \Exception('Invalid avatar file provided.');
+//                        }
+//
+//                        $imageStorage = app(\App\Contracts\ImageStorageInterface::class);
+//
+//                        // Delete the old avatar if it exists
+//                        if ($record->profile_picture_public_id) {
+//                            $imageStorage->delete('avatars/' . $record->profile_picture_public_id);
+//                        }
+//
+//                        // Upload the new avatar
+//                        $file = $data['profile_picture'];
+//                        $result = $imageStorage->upload($file, 'avatars');
+//
+//                        // Update user's avatar info
+//                        $record->update([
+//                            'profile_picture_public_id' => $result['public_id'],
+//                            'profile_picture_url' => $result['secure_url'],
+//                        ]);
+//                    })
                     ->form([
                         Forms\Components\Select::make('creative_status')
                             ->options([
