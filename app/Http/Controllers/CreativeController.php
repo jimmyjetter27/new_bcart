@@ -135,10 +135,6 @@ class CreativeController extends Controller implements HasMiddleware
 
     public function search(Request $request)
     {
-//        $keyword = $request->input('keyword');
-//        $keyword = $request->input('filter.keyword');
-
-
         $users = QueryBuilder::for(User::class)
             ->where('type', Creative::class)
             ->allowedFilters([
