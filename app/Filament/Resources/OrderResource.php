@@ -64,7 +64,7 @@ class OrderResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total_price')
                     ->label('Total Price')
-                    ->money('usd', true)
+                    ->money('ghs', true)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('transaction_status')
                     ->label('Transaction Status')
@@ -88,6 +88,7 @@ class OrderResource extends Resource
                         'failed' => 'Failed',
                     ]),
             ])
+            ->defaultSort('created_at', 'desc')
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])

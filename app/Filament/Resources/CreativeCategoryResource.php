@@ -106,7 +106,7 @@ class CreativeCategoryResource extends Resource
                     ->icon('heroicon-o-eye')
                     ->label('')
                     ->color('gray')
-                    ->modalHeading('Image Preview')
+                    ->modalHeading(fn($record) => $record->creative_category)
                     ->modalSubmitAction(false)
                     ->action(fn($record) => null)
                     ->modalContent(fn($record) => view('filament.modals.image-preview', [

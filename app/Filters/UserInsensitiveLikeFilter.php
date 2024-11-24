@@ -7,16 +7,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 class UserInsensitiveLikeFilter implements Filter
 {
-    protected $value;
-
-    public function __construct($value = null)
-    {
-        $this->value = strtolower($value);
-    }
-
     public function __invoke(Builder $query, $value, string $property): Builder
     {
-        $value = $this->value;
+        $value = strtolower($value);
 
         return $query->where(function ($query) use ($value) {
             $query->whereRaw('LOWER(first_name) LIKE ?', ["%{$value}%"])
@@ -35,4 +28,3 @@ class UserInsensitiveLikeFilter implements Filter
         });
     }
 }
-
