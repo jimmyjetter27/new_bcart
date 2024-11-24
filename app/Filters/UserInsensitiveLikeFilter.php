@@ -24,6 +24,10 @@ class UserInsensitiveLikeFilter implements Filter
                 })
                 ->orWhereHas('photos.photo_categories', function ($q) use ($value) {
                     $q->whereRaw('LOWER(photo_category) LIKE ?', ["%{$value}%"]);
+                })
+                ->orWhereHas('photos', function ($q) use ($value) {
+                    $q->whereRaw('LOWER(title) LIKE ?', ["%{$value}%"])
+                        ->orWhereRaw('LOWER(description) LIKE ?', ["%{$value}%"]);
                 });
         });
     }
