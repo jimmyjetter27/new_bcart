@@ -138,6 +138,7 @@ class OrderController extends Controller
     {
         $photoIds = $request->input('photo_ids');
         $user = Auth::guard('sanctum')->user();
+        $guestIdentifier = null;
 
 
         if (!$user) {
