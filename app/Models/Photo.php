@@ -36,6 +36,12 @@ class Photo extends Model
         return !str_contains($this->image_public_id, '.');
     }
 
+    public function isUploader()
+    {
+        $user = auth('sanctum')->user();
+        return $user && intval($user->id) === intval($this->user_id);
+    }
+
 //    public function orders()
 //    {
 //        return $this->morphedByMany(Order::class, 'orderable', 'orderables', 'orderable_id', 'order_id');
@@ -134,10 +140,9 @@ class Photo extends Model
 
         static::addGlobalScope('approvedFilter', function (Builder $builder) {
             $user = auth('sanctum')->user();
-            $isUploader = $user && intval($user->id) === intval($this->user_id);
 
             // If the user is an admin or super admin or is the uploader, do not apply any scope
-            if ($user && ($user->isAdmin() || $user->isSuperAdmin()) || $isUploader) {
+            if ($user && ($user->isAdmin() || $user->isSuperAdmin()) || $user->isUploader()) {
                 // Do not apply any scope
                 return;
             }
