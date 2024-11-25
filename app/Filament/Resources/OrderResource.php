@@ -3,6 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
+use App\Filament\Resources\OrderResource\RelationManagers\OrderItemsRelationManager;
+use App\Filament\Resources\OrderResource\RelationManagers\TransactionsRelationManager;
 use App\Models\Order;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
@@ -11,6 +13,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Illuminate\Database\Eloquent\Builder;
 
 class OrderResource extends Resource
@@ -52,14 +55,20 @@ class OrderResource extends Resource
         return false;
     }
 
+    public function getCustomerNameAttribute()
+    {
+        return $this->customer->name ?? $this->guest_identifier ?? 'Guest';
+    }
+
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('order_number')
                     ->label('Order Number')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('customer.name')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('customer_name')
                     ->label('Customer')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('total_price')
@@ -90,7 +99,16 @@ class OrderResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Action::make('View')
+                    ->label('View')
+                    ->icon('heroicon-o-eye')
+                    ->modalHeading('Order Details')
+                    ->modalWidth('lg')
+                    ->modalContent(function ($record) {
+                        return view('filament.modals.order-details', ['record' => $record]);
+                    })
+                    ->modalSubmitAction(false)
+                    ->color('primary'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -102,7 +120,8 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // Define any relations if needed, e.g., order items or transactions
+            OrderItemsRelationManager::class,
+            TransactionsRelationManager::class,
         ];
     }
 

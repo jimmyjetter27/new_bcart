@@ -20,26 +20,10 @@ class Order extends Model
         'transaction_status'
     ];
 
-//    public function orderables()
-//    {
-//        return $this->morphToMany(Photo::class, 'orderable');
-//    }
-
-//    public function orderables(): MorphToMany
-//    {
-//        return $this->morphToMany(Photo::class, 'orderable', 'orderables');
-//    }
-
     public function orderables()
     {
         return $this->hasMany(Orderable::class, 'order_id');
     }
-
-
-//    public function photos()
-//    {
-//        return $this->morphedByMany(Photo::class, 'orderable', 'orderables');
-//    }
 
     public function photos()
     {
@@ -54,5 +38,10 @@ class Order extends Model
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function getCustomerNameAttribute()
+    {
+        return $this->customer->name ?? $this->guest_identifier ?? 'Guest';
     }
 }
