@@ -54,8 +54,8 @@ Route::group(['middleware' => [ForceJson::class]], function () {
     Route::post('buy-photos', [OrderController::class, 'buyPhotos']);
 
     Route::get('search-user', [\App\Http\Controllers\UserController::class, 'search']);
-    Route::get('search-creative', [CreativeController::class, 'search']);
-    Route::get('search-photo', [PhotoController::class, 'search']);
+    Route::get('search-creative', [CreativeController::class, 'search'])->middleware(\App\Http\Middleware\OptionalAuthenticate::class);
+    Route::get('search-photo', [PhotoController::class, 'search'])->middleware(\App\Http\Middleware\OptionalAuthenticate::class);
     Route::get('related-images/{photo}', [PhotoController::class, 'relatedImages']);
 
     Route::get('featured-creative', [CreativeController::class, 'featuredCreative']);
