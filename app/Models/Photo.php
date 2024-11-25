@@ -141,8 +141,8 @@ class Photo extends Model
         static::addGlobalScope('approvedFilter', function (Builder $builder) {
             $user = auth('sanctum')->user();
 
-            // If the user is an admin or super admin or is the uploader, do not apply any scope
-            if ($user && ($user->isAdmin() || $user->isSuperAdmin()) || $user->isUploader()) {
+            // If the user is an admin or super admin, do not apply any scope
+            if ($user && ($user->isAdmin() || $user->isSuperAdmin())) {
                 // Do not apply any scope
                 return;
             }
