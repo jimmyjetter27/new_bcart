@@ -139,12 +139,10 @@ class OrderController extends Controller
         $photoIds = $request->input('photo_ids');
         $user = Auth::guard('sanctum')->user();
 
-        // Generate a guest identifier for unauthenticated users
-        $guestIdentifier = $request->ip() . '-' . md5($request->header('User-Agent'));
-//        dd($guestIdentifier);
 
-        if (!$user && !$guestIdentifier) {
-            session(['guest_identifier' => $guestIdentifier]);
+        if (!$user) {
+            // Generate a guest identifier for unauthenticated users
+            $guestIdentifier = $request->ip() . '-' . md5($request->header('User-Agent'));
         }
 
         // Validate input
@@ -183,8 +181,8 @@ class OrderController extends Controller
             ], 400);
         }
 
-        // Calculate total price for photos
-        $totalPrice = $photos->sum('price');
+        // Calculate total price for new photos
+        $totalPrice = $newPhotos->sum('price');
 
         // Begin transaction
         DB::beginTransaction();

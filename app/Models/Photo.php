@@ -55,10 +55,26 @@ class Photo extends Model
 
 
 
-    public function hasPurchasedPhoto($userId)
+//    public function hasPurchasedPhoto($userId)
+//    {
+//        return $this->orders()
+//            ->where('customer_id', $userId)
+//            ->where('transaction_status', 'completed')
+//            ->exists();
+//    }
+
+    public function hasPurchasedPhoto($userId = null, $guestIdentifier = null)
     {
         return $this->orders()
-            ->where('customer_id', $userId)
+            ->where(function ($query) use ($userId, $guestIdentifier) {
+                if ($userId) {
+                    $query->where('customer_id', $userId);
+                } elseif ($guestIdentifier) {
+                    $query->where('guest_identifier', $guestIdentifier);
+                } else {
+                    $query->whereRaw('1 = 0'); // Ensures no records are returned
+                }
+            })
             ->where('transaction_status', 'completed')
             ->exists();
     }
@@ -95,6 +111,23 @@ class Photo extends Model
         return $this->belongsToMany(PhotoTag::class, 'photo_tag', 'photo_id', 'photo_tag_id');
     }
 
+//    protected static function boot()
+//    {
+//        parent::boot();
+//
+//        static::addGlobalScope('approvedFilter', function (Builder $builder) {
+//            $user = auth('sanctum')->user();
+//
+//            // Apply the filter only if the user is not an admin, super admin, or the creative who uploaded the image
+//            if (!$user || (!$user->isAdmin() && !$user->isSuperAdmin())) {
+//                $builder->where(function ($query) use ($user) {
+//                    $query->where('is_approved', true)
+//                        ->orWhere('user_id', $user?->id); // Allow the creative to see their own unapproved images
+//                });
+//            }
+//        });
+//    }
+
     protected static function boot()
     {
         parent::boot();
@@ -102,13 +135,21 @@ class Photo extends Model
         static::addGlobalScope('approvedFilter', function (Builder $builder) {
             $user = auth('sanctum')->user();
 
-            // Apply the filter only if the user is not an admin, super admin, or the creative who uploaded the image
-            if (!$user || (!$user->isAdmin() && !$user->isSuperAdmin())) {
-                $builder->where(function ($query) use ($user) {
-                    $query->where('is_approved', true)
-                        ->orWhere('user_id', $user?->id); // Allow the creative to see their own unapproved images
-                });
+            // If the user is an admin or super admin, do not apply any scope
+            if ($user && ($user->isAdmin() || $user->isSuperAdmin())) {
+                // Do not apply any scope
+                return;
             }
+
+            // For other users, apply the approved filter
+            $builder->where(function ($query) use ($user) {
+                $query->where('is_approved', true);
+
+                // If the user is logged in, allow them to see their own unapproved photos
+                if ($user) {
+                    $query->orWhere('user_id', $user->id);
+                }
+            });
         });
     }
 

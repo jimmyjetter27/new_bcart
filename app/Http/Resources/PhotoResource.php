@@ -19,8 +19,22 @@ class PhotoResource extends JsonResource
     {
         $user = auth()->user();
 
-        $rowSpan = $this->image_height > $this->image_width ? 2 : 1;
-        $colSpan = $this->image_width > $this->image_height ? 2 : 1;
+        // Define threshold for large images
+        $largeImageThreshold = 1000; // Adjust as needed
+
+        // Determine if the image is large
+        $isLargeImage = $this->image_width >= $largeImageThreshold && $this->image_height >= $largeImageThreshold;
+
+        // Set row_span and col_span
+        if ($isLargeImage) {
+            $rowSpan = 2;
+            $colSpan = 2;
+        } else {
+            $rowSpan = 1;
+            $colSpan = 1;
+        }
+
+        $hasPurchased = $this->checkIfPurchased();
 
         $isUploader = $user && $user->id === $this->user_id;
         $hasPurchased = $user ? $this->hasPurchasedPhoto($user->id, $this->id) : false;
@@ -38,6 +52,7 @@ class PhotoResource extends JsonResource
             'row_span' => $rowSpan,
             'col_span' => $colSpan,
             'is_approved' => $this->is_approved,
+            'has_purchased' => $hasPurchased,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'creative' => $this->whenLoaded('creative', fn() => new UserResource($this->creative), [
@@ -59,27 +74,19 @@ class PhotoResource extends JsonResource
      */
     private function getImageUrl()
     {
-        $user = auth('sanctum')->user();
-        $isUploader = $user && intval($user->id) === intval($this->user_id);
-
-        $hasPurchased = $user ? $this->hasPurchasedPhoto($user->id) : false;
-
         $freeImage = $this->freeImage();
-
         $imageHelper = app(ImageHelper::class);
-
-//        Log::info(json_encode([
-//            'has_purchased' => $hasPurchased,
-//            'freeImage' => $freeImage
-//        ]));
 
         if ($freeImage) {
             return $this->image_url;
-        } elseif ($isUploader || $hasPurchased) {
+        }
+
+        $hasPurchased = $this->checkIfPurchased();
+
+        if ($hasPurchased) {
             return $imageHelper->getSignedImageUrl($this->image_public_id); // Signed URL for owner/purchased
         } else {
             return $this->applyWatermark();
-//            return $imageHelper->applyCloudinaryWatermark($this->image_public_id, $this->image_width, $this->image_height);
         }
     }
 
@@ -101,4 +108,28 @@ class PhotoResource extends JsonResource
 
         return $imageHelper->applyLocalWatermark($this->image_url)->encode('data-url');
     }
+
+    /**
+     * Determine if the current user has purchased the photo.
+     *
+     * @return bool
+     */
+    private function checkIfPurchased()
+    {
+        $user = auth('sanctum')->user();
+        $guestIdentifier = request()->header('X-Guest-Identifier');
+
+        $isUploader = $user && intval($user->id) === intval($this->user_id);
+
+        if ($isUploader) {
+            return true;
+        } elseif ($user) {
+            return $this->hasPurchasedPhoto($user->id);
+        } elseif ($guestIdentifier) {
+            return $this->hasPurchasedPhoto(null, $guestIdentifier);
+        }
+
+        return false;
+    }
+
 }
