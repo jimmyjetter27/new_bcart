@@ -6,6 +6,7 @@ use App\Scopes\ApprovedPhotoScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 
 class Photo extends Model
 {
@@ -79,6 +80,7 @@ class Photo extends Model
 //            return true;
 //        }
 
+        Log::info('userId inside hasPurchasedPhoto: '. $userId);
         return Order::where(function ($query) use ($userId, $guestIdentifier) {
             if ($userId) {
                 $query->where('customer_id', $userId);

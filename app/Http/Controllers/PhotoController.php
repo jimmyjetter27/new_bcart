@@ -37,8 +37,6 @@ class PhotoController extends Controller implements HasMiddleware
      */
     public function index(Request $request)
     {
-        $user = auth('sanctum')->user();
-
         $categoriesQuery = QueryBuilder::for(Photo::class)
             ->allowedFilters(['title'])
             ->latest();
