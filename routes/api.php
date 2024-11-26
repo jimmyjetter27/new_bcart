@@ -20,8 +20,8 @@ Route::group(['middleware' => [ForceJson::class]], function () {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);
 
-        Route::get('auth/google', [GoogleController::class, 'redirectToGoogle']);
-        Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+    Route::get('auth/google', [GoogleController::class, 'redirectToGoogle']);
+    Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
@@ -51,26 +51,28 @@ Route::group(['middleware' => [ForceJson::class]], function () {
         Route::post('hire-creative', [HiringController::class, 'store']);
     });
 
-    Route::post('buy-photos', [OrderController::class, 'buyPhotos']);
+    Route::group(['middleware' => [\App\Http\Middleware\OptionalAuthenticate::class]], function () {
+        Route::post('buy-photos', [OrderController::class, 'buyPhotos']);
 
-    Route::get('search-user', [\App\Http\Controllers\UserController::class, 'search']);
-    Route::get('search-creative', [CreativeController::class, 'search']);
-    Route::get('search-photo', [PhotoController::class, 'search']);
-    Route::get('related-images/{photo}', [PhotoController::class, 'relatedImages']);
+        Route::get('search-user', [\App\Http\Controllers\UserController::class, 'search']);
+        Route::get('search-creative', [CreativeController::class, 'search']);
+        Route::get('search-photo', [PhotoController::class, 'search']);
+        Route::get('related-images/{photo}', [PhotoController::class, 'relatedImages']);
 
-    Route::get('featured-creative', [CreativeController::class, 'featuredCreative']);
-    Route::get('featured-creatives', [CreativeController::class, 'featuredCreatives']);
-    Route::get('featured-creative-categories', [CreativeCategoryController::class, 'featuredCreativeCategories']);
+        Route::get('featured-creative', [CreativeController::class, 'featuredCreative']);
+        Route::get('featured-creatives', [CreativeController::class, 'featuredCreatives']);
+        Route::get('featured-creative-categories', [CreativeCategoryController::class, 'featuredCreativeCategories']);
 
-    Route::get('user-{user}-photos', [PhotoController::class, 'getUserPhotos']);
+        Route::get('user-{user}-photos', [PhotoController::class, 'getUserPhotos']);
 
+        Route::apiResources([
+            'creatives' => CreativeController::class,
+            'creative-categories' => CreativeCategoryController::class,
+            'photo-categories' => PhotoCategoryController::class,
+            'photos' => PhotoController::class
+        ]);
 
-    Route::apiResources([
-        'creatives' => CreativeController::class,
-        'creative-categories' => CreativeCategoryController::class,
-        'photo-categories' => PhotoCategoryController::class,
-        'photos' => PhotoController::class
-    ]);
+    });
 
     Route::post('suggest-upload', [\App\Http\Controllers\SuggestionController::class, 'store']);
 
@@ -82,7 +84,7 @@ Route::group(['middleware' => [ForceJson::class]], function () {
 
 Route::get('clear-database', [\App\Http\Controllers\MigrationController::class, 'clearDatabase']);
 Route::post('test-image-upload', [\App\Http\Controllers\TestController::class, 'uploadImage']);
-Route::post('test-image-delete', [\App\Http\Controllers\TestController::class, 'deleteImage'])  ;
+Route::post('test-image-delete', [\App\Http\Controllers\TestController::class, 'deleteImage']);
 Route::get('verify-user/{email}', [\App\Http\Controllers\TestController::class, 'verifyUser']);
 Route::get('delete-user/{email}', [\App\Http\Controllers\TestController::class, 'deleteUser']);
 Route::get('active', function () {
@@ -92,7 +94,7 @@ Route::get('active', function () {
         'data' => new \App\Http\Resources\UserResource(\App\Models\User::latest()->first())
     ]);
 });
-Route::get('list-envs', [\App\Http\Controllers\TestController::class, 'listEnvs'])->middleware('auth:sanctum');
+//Route::get('list-envs', [\App\Http\Controllers\TestController::class, 'listEnvs'])->middleware('auth:sanctum');
 
 Route::post('test-payment', [\App\Http\Controllers\TestController::class, 'testPayment']);
 Route::post('verify-payment', [\App\Http\Controllers\TestController::class, 'verifyPayment']);
@@ -103,7 +105,7 @@ Route::delete('unassign-photos', [\App\Http\Controllers\TestController::class, '
 
 
 Route::get('pass', function () {
-   return env('FRONTEND_URL');
+    return env('FRONTEND_URL');
 });
 Route::fallback(function () {
     return response()->json([

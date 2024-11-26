@@ -20,7 +20,9 @@ class OptionalAuthenticate
         Auth::shouldUse('sanctum');
 
         // Attempt to authenticate the user
-        $user = Auth::user();
+        $user = Auth::user(); // This uses the 'sanctum' guard now
+
+        // Proceed with the request regardless of authentication status
         return $next($request);
     }
 }

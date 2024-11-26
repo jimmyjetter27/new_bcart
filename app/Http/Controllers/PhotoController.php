@@ -28,7 +28,6 @@ class PhotoController extends Controller implements HasMiddleware
     public static function middleware()
     {
         return [
-            new Middleware(OptionalAuthenticate::class, only: ['show', 'relatedImages']),
             new Middleware('auth:sanctum', only: ['store', 'update', 'destroy']),
 //            new Middleware('optional.auth:sanctum', only: ['show']),
         ];
