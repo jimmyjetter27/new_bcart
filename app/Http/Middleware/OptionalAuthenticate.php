@@ -21,6 +21,11 @@ class OptionalAuthenticate
             Auth::setUser(
                 Auth::guard('sanctum')->user()
             );
+
+            Log::info(json_encode([
+                'bearerToken' => $request->bearerToken(),
+                'User' => Auth::guard('sanctum')
+            ]));
         }
 
         return $next($request);
