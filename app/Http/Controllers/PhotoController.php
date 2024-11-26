@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\ImageStorageInterface;
 use App\Filters\PhotoInsensitiveLikeFilter;
+use App\Http\Middleware\OptionalAuthenticate;
 use App\Http\Resources\PhotoResource;
 use App\Http\Resources\UserResource;
 use App\Models\Photo;
@@ -27,6 +28,7 @@ class PhotoController extends Controller implements HasMiddleware
     public static function middleware()
     {
         return [
+            new Middleware(OptionalAuthenticate::class, only: ['show', 'relatedImages']),
             new Middleware('auth:sanctum', only: ['store', 'update', 'destroy']),
 //            new Middleware('optional.auth:sanctum', only: ['show']),
         ];
