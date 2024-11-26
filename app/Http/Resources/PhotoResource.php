@@ -17,10 +17,10 @@ class PhotoResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $user = auth()->user();
+        $user = auth('sanctum')->user();
 
         // Define threshold for large images
-        $largeImageThreshold = 1000; // Adjust as needed
+        $largeImageThreshold = 1000;
 
         // Determine if the image is large
         $isLargeImage = $this->image_width >= $largeImageThreshold && $this->image_height >= $largeImageThreshold;
@@ -36,6 +36,7 @@ class PhotoResource extends JsonResource
 
         $hasPurchased = $this->checkIfPurchased();
 
+//        dd($user);
         $isUploader = $user && $user->id === $this->user_id;
 
 
@@ -52,15 +53,16 @@ class PhotoResource extends JsonResource
             'row_span' => $rowSpan,
             'col_span' => $colSpan,
             'is_approved' => (int)$this->is_approved,
+            'is_uploader' => (int)$isUploader,
             'has_purchased' => (int)$hasPurchased,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'creative' => $this->whenLoaded('creative', fn() => new UserResource($this->creative), [
-                'id' => null,
-                'first_name' => 'Deleted',
-                'last_name' => 'User',
-                'username' => 'deleted_user',
-                'profile_picture' => asset('images/default-avatar.png'),
+//                'id' => null,
+//                'first_name' => 'Deleted',
+//                'last_name' => 'User',
+//                'username' => 'deleted_user',
+//                'profile_picture' => asset('images/default-avatar.png'),
             ]),
             'photo_categories' => PhotoCategoryResource::collection($this->whenLoaded('photo_categories')),
             'tags' => PhotoTagResource::collection($this->whenLoaded('tags')),
@@ -74,10 +76,17 @@ class PhotoResource extends JsonResource
      */
     private function getImageUrl()
     {
+        $user = auth('sanctum')->user();
+//        dd($user);
         $freeImage = $this->freeImage();
+        $isUploader = $user && intval($user->id) === intval($this->user_id);
         $imageHelper = app(ImageHelper::class);
 
         if ($freeImage) {
+            return $this->image_url;
+        }
+
+        if ($isUploader) {
             return $this->image_url;
         }
 
@@ -119,21 +128,17 @@ class PhotoResource extends JsonResource
         $user = auth('sanctum')->user();
         $guestIdentifier = request()->header('X-Guest-Identifier');
 
-        // Log the IDs for debugging
-        $userId = $user ? $user->id : 'null';
-        Log::info("User ID: {$userId}, Photo User ID: {$this->user_id}");
+//        $isUploader = $user && intval($user->id) === intval($this->user_id);
+//        dd($isUploader);
 
-        $isUploader = $user && intval($user->id) === intval($this->user_id);
-
-        if ($isUploader) {
-            return true;
-        } elseif ($user) {
+        if ($user) {
             return $this->hasPurchasedPhoto($user->id);
         } elseif ($guestIdentifier) {
             return $this->hasPurchasedPhoto(null, $guestIdentifier);
         }
 
         return false;
+
     }
 
 }

@@ -75,9 +75,9 @@ class Photo extends Model
     public function hasPurchasedPhoto($userId = null, $guestIdentifier = null)
     {
         // If the user is the uploader, they have implicit access
-        if ($userId && $userId == $this->user_id) {
-            return true;
-        }
+//        if ($userId && $userId == $this->user_id) {
+//            return true;
+//        }
 
         return Order::where(function ($query) use ($userId, $guestIdentifier) {
             if ($userId) {
