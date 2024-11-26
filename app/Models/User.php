@@ -141,19 +141,8 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 
     public function photos()
     {
-        $authenticatedUser = auth('sanctum')->user();
-//        \Log::info('Authenticated User ID:', ['authenticated_user_id' => $authenticatedUser->id ?? null]);
-//        \Log::info('Current User ID:', ['current_user_id' => $this->id]);
-
-        if ($authenticatedUser && intval($authenticatedUser->id) === intval($this->id)) {
-//            \Log::info('Removing global scopes for authenticated user.');
-            return $this->hasMany(Photo::class)->withoutGlobalScopes();
-        } else {
-//            \Log::info('Applying default scopes for other users.');
-            return $this->hasMany(Photo::class);
-        }
+        return $this->hasMany(Photo::class);
     }
-
 
 
     public function purchasedPhotos()

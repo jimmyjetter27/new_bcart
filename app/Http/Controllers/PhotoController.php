@@ -137,7 +137,8 @@ class PhotoController extends Controller implements HasMiddleware
             ]);
         }
 
-        $photosCollection = Photo::whereIn('id', collect($photos)->pluck('id'))
+        $photosCollection = Photo::withoutGlobalScopes()
+            ->whereIn('id', collect($photos)->pluck('id'))
             ->with(['creative', 'photo_categories', 'tags'])
             ->get();
 
