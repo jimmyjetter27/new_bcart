@@ -127,10 +127,10 @@ class PhotoResource extends JsonResource
     {
         $user = auth('sanctum')->user();
         $guestIdentifier = request()->header('X-Guest-Identifier');
-        Log::info(json_encode([
-            'user' => $user,
-            'guestIdentifer' => $guestIdentifier
-        ]));
+//        Log::info(json_encode([
+//            'user' => $user,
+//            'guestIdentifer' => $guestIdentifier
+//        ]));
 
 //        $isUploader = $user && intval($user->id) === intval($this->user_id);
 //        dd($isUploader);

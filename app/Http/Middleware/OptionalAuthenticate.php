@@ -17,15 +17,12 @@ class OptionalAuthenticate
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Set the default guard to 'sanctum'g
-        Auth::shouldUse('sanctum');
+        if ($request->bearerToken()) {
+            Auth::setUser(
+                Auth::guard('sanctum')->user()
+            );
+        }
 
-        // Attempt to authenticate the user
-        $user = Auth::user(); // This uses the 'sanctum' guard now
-
-        Log::info('Logging user in OptionalAuthenticate middleware: '. json_encode($user));
-
-        // Proceed with the request regardless of authentication status
         return $next($request);
     }
 }
