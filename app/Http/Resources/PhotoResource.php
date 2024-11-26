@@ -51,8 +51,8 @@ class PhotoResource extends JsonResource
             'image_url' => $imageUrl,
             'row_span' => $rowSpan,
             'col_span' => $colSpan,
-            'is_approved'    => (int) $this->is_approved,
-            'has_purchased'  => (int) $hasPurchased,
+            'is_approved' => (int)$this->is_approved,
+            'has_purchased' => (int)$hasPurchased,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'creative' => $this->whenLoaded('creative', fn() => new UserResource($this->creative), [
@@ -120,7 +120,8 @@ class PhotoResource extends JsonResource
         $guestIdentifier = request()->header('X-Guest-Identifier');
 
         // Log the IDs for debugging
-        Log::info("User ID: {$user->id}, Photo User ID: {$this->user_id}");
+        $userId = $user ? $user->id : 'null';
+        Log::info("User ID: {$userId}, Photo User ID: {$this->user_id}");
 
         $isUploader = $user && intval($user->id) === intval($this->user_id);
 
