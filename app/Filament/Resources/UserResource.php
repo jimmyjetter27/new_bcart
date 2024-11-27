@@ -150,6 +150,25 @@ class UserResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
+                Action::make('viewPhotos')
+                    ->icon('heroicon-o-eye')
+                    ->label('')
+                    ->color('primary')
+                    ->modalSubmitAction(false)
+                    ->tooltip('View Uploaded Photos') // Tooltip for clarity
+                    ->visible(fn($record) => $record->type === 'App\Models\Creative' && $record->photos()->exists())
+                    ->action(function ($record) {
+                        // This action doesn't need to perform anything here
+                        // The modal will handle displaying the photos
+                    })
+                    ->modalHeading('Uploaded Photos')
+                    ->modalDescription('Browse through all photos uploaded by this creative.')
+                    ->modalContent(function ($record) {
+                        return view('filament.modals.user-photos', [
+                            'user' => $record,
+                        ]);
+                    })
+                    ->modalWidth('2xl'),
                 Action::make('approve')
                     ->icon(fn($record) => $record->is_approved ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
                     ->label('')
