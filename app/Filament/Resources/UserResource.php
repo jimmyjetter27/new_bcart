@@ -120,6 +120,19 @@ class UserResource extends Resource
                     ->circular()
                     ->sortable()
                     ->default(asset('/images/default-avatar.png')),
+                Tables\Columns\IconColumn::make('creative_status')
+                    ->label('Creative Status')
+                    ->boolean()
+                    ->icons([
+                        'heroicon-o-check-circle' => 'Verified',
+                        'heroicon-o-x-circle' => 'Declined',
+                    ])
+                    ->colors([
+                        'success' => 'Verified',
+                        'danger' => 'Declined',
+                    ])
+                    ->tooltip(fn($record) => $record->creative_status ?? 'Not a Creative')
+//                    ->visible(fn($record) => $record->type === 'App\Models\Creative'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
@@ -137,11 +150,15 @@ class UserResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Action::make('updateCreativeStatus')
-                    ->label('Update Status')
-//                    ->icon('heroicon-o-pencil')
-                    ->color('gray')
-                    ->visible(fn($record) => $record->type === 'App\Models\Creative')
+                Action::make('approve')
+                    ->icon(fn($record) => $record->is_approved ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->label('')
+                    ->action(fn($record) => $record->update(['is_approved' => !$record->is_approved]))
+                    ->requiresConfirmation()
+                    ->modalHeading(fn($record) => $record->is_approved ? 'Unapprove Photo' : 'Approve Photo')
+                    ->modalDescription('Are you sure you want to change the approval status of this photo?')
+                    ->color(fn($record) => $record->is_approved ? 'danger' : 'success')
+                    ->tooltip('Verify creative')
 //                    ->action(function (User $record, array $data) {
 //                        if (!isset($data['profile_picture']) || !is_file($data['profile_picture'])) {
 //                            throw new \Exception('Invalid avatar file provided.');
