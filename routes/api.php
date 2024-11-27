@@ -51,7 +51,7 @@ Route::group(['middleware' => [ForceJson::class]], function () {
         Route::post('hire-creative', [HiringController::class, 'store']);
     });
 
-//    Route::group(['middleware' => [\App\Http\Middleware\OptionalAuthenticate::class]], function () {
+
         Route::post('buy-photos', [OrderController::class, 'buyPhotos']);
 
         Route::get('search-user', [\App\Http\Controllers\UserController::class, 'search']);
@@ -72,9 +72,9 @@ Route::group(['middleware' => [ForceJson::class]], function () {
             'photos' => PhotoController::class
         ]);
 
-//    });
 
     Route::post('suggest-upload', [\App\Http\Controllers\SuggestionController::class, 'store']);
+    Route::get('banner', [\App\Http\Controllers\BannerController::class, 'show']);
 
     Route::get('paystack-supported-banks', [\App\Http\Controllers\PaystackController::class, 'listBanks']);
     Route::get('paystack-callback', [\App\Http\Controllers\TransactionController::class, 'paystackCallback']);

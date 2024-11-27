@@ -24,7 +24,8 @@ class Photo extends Model
         'image_width',
         'image_height',
         'is_approved',
-        'photo_category_id'
+        'photo_category_id',
+        'is_banner'
     ];
 
     public function getPriceAttribute($value)
@@ -131,6 +132,14 @@ class Photo extends Model
     protected static function booted()
     {
         static::addGlobalScope(new ApprovedPhotoScope);
+
+        static::deleting(function ($photo) {
+            if ($photo->is_banner) {
+                cache()->forget('banner_photo');
+            }
+        });
     }
+
+
 
 }

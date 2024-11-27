@@ -6,6 +6,7 @@ use App\Contracts\ImageStorageInterface;
 use App\Filament\Resources\PhotoResource\Pages;
 use App\Models\Photo;
 use Filament\Forms;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -17,6 +18,18 @@ class PhotoResource extends Resource
     protected static ?string $model = Photo::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?int $navigationSort = 4;
+
+    public static function saved($record)
+    {
+        if ($record->is_banner) {
+            \App\Models\Photo::where('id', '!=', $record->id)
+                ->update(['is_banner' => false]);
+
+            cache()->put('banner_photo', $record, now()->addDay());
+        } else {
+            cache()->forget('banner_photo');
+        }
+    }
 
     public static function form(Form $form): Form
     {
@@ -35,6 +48,12 @@ class PhotoResource extends Resource
                         $record->image_public_id = $result['public_id'];
                         return $record->image_url;
                     }),
+                Toggle::make('is_banner')
+                    ->label('Set as Banner')
+                    ->helperText('Set this photo as the banner image.')
+                    ->reactive()
+                    ->afterStateUpdated(fn($state, $set) => $state ? $set('is_banner', true) : $set('is_banner', false))
+                    ->visible(fn($record) => $record->is_approved),
             ]);
     }
 
@@ -52,7 +71,35 @@ class PhotoResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-//                Tables\Actions\EditAction::make()->icon('heroicon-o-pencil'),
+                Action::make('setBanner')
+                    ->icon(fn($record) => $record->is_banner ? 'heroicon-s-star' : 'heroicon-o-star')
+                    ->label('')
+                    ->tooltip(fn($record) => $record->is_banner ? 'Unset as Banner' : 'Set as Banner')
+                    ->action(function ($record) {
+                        if ($record->is_banner) {
+                            // Unset the banner status
+                            $record->update(['is_banner' => false]);
+
+                            // Remove from cache
+                            cache()->forget('banner_photo');
+                        } else {
+                            // Set this photo as the banner
+                            $record->update(['is_banner' => true]);
+
+                            // Unset banner status on other photos
+                            \App\Models\Photo::where('id', '!=', $record->id)
+                                ->update(['is_banner' => false]);
+
+                            // Update the cache
+                            cache()->put('banner_photo', $record, now()->addDay());
+                        }
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading(fn($record) => $record->is_banner ? 'Unset as Banner' : 'Set as Banner')
+                    ->modalDescription('Are you sure you want to change the banner status of this photo?')
+                    ->color(fn($record) => $record->is_banner ? 'danger' : 'success')
+                    ->visible(fn($record) => $record->is_approved) // Only show for approved photos
+                    ->disabled(fn($record) => !$record->is_approved),// Disable if not approved
                 Action::make('approve')
                     ->icon(fn($record) => $record->is_approved ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
                     ->label('')
