@@ -44,7 +44,7 @@ class EditProfile extends BaseEditProfile
 //                $this->getNameFormComponent(),
                 $this->getEmailFormComponent(),
                 $this->getPasswordFormComponent(),
-                $this->getPassgwordConfirmationFormComponent(),
+                $this->getPasswordConfirmationFormComponent(),
             ])
             ->statePath('data');
     }
