@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\CustomProfile;
 use App\Filament\Pages\EditProfile;
 use App\Filament\Resources\AdminResource\Widgets\PendingApprovalsWidget;
 use App\Filament\Resources\AdminResource\Widgets\StatsOverview;
@@ -68,10 +69,11 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->brandLogo(asset('/images/BcartLogo.jpg'))
-//            ->profile(Pages\Auth\EditProfile::class);
+//            ->profile(Pages\Auth\CustomProfile::class);
             ->profile()
             ->userMenuItems([
-                'admin/profile' => MenuItem::make()->url(fn (): string => EditProfile::getUrl())
+                'profile' => MenuItem::make()->url(fn (): string => EditProfile::getUrl())
+//                'admin/profile' => MenuItem::make()->url(fn (): string => CustomProfile::getUrl())
             ]);
     }
 }

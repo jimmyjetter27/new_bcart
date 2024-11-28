@@ -2,40 +2,112 @@
 
 namespace App\Filament\Pages;
 
+use Exception;
+use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\FileUpload;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
-use Filament\Forms\Form;
+use Illuminate\Support\Facades\Auth;
+use Filament\Notifications\Notification;
 
-class EditProfile extends Page
+class EditProfile extends Page implements Forms\Contracts\HasForms
 {
-    protected static ?string $navigationLabel = 'Profile';
+    use Forms\Concerns\InteractsWithForms;
+
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static string $view = 'filament.pages.edit-profile';
 
-    public function form(Form $form): Form
+    /**
+     * Define the form schema.
+     */
+    protected function getFormSchema(): array
     {
-        return $form->schema([
-            Forms\Components\TextInput::make('name')->required()->label('Name'),
-            Forms\Components\TextInput::make('email')->email()->required()->label('Email Address'),
-            Forms\Components\FileUpload::make('profile_picture')
-                ->label('Profile Picture')
-                ->directory('profile_pictures')
-                ->image()
-                ->maxSize(5120)
-                ->helperText('Upload a square image (e.g., 300x300px) for your profile picture.'),
-            Forms\Components\TextInput::make('password')
+        return [
+            TextInput::make('first_name')
+                ->label('First Name')
+                ->required()
+                ->maxLength(255),
+
+            TextInput::make('last_name')
+                ->label('Last Name')
+                ->required()
+                ->maxLength(255),
+
+            TextInput::make('email')
+                ->label(__('filament-panels::pages/auth/edit-profile.form.email.label'))
+                ->email()
+                ->required()
+                ->maxLength(255)
+                ->unique(ignoreRecord: true),
+
+            TextInput::make('password')
+                ->password()
                 ->label('New Password')
-                ->password()
-                ->helperText('Leave blank if you don’t want to change your password.')
-                ->dehydrateStateUsing(fn($state) => Hash::make($state))
-                ->dehydrated(fn($state) => !empty($state)),
-            Forms\Components\TextInput::make('password_confirmation')
-                ->label('Confirm New Password')
-                ->password()
-                ->requiredWith('password')
-                ->same('password'),
-        ]);
+                ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null)
+                ->dehydrated(fn ($state) => filled($state))
+                ->required(false)
+                ->minLength(8)
+                ->maxLength(255)
+                ->revealable()
+                ->helperText('Leave blank if you do not want to change the password.'),
+
+//            Textarea::make('description')
+//                ->label('Description')
+//                ->maxLength(500),
+
+//            FileUpload::make('profile_picture')
+//                ->label('Avatar')
+//                ->image()
+//                ->directory('avatars')
+//                ->preserveFilenames(false)
+//                ->imagePreviewHeight('200')
+//                ->maxSize(2048) // 2MB
+//                ->imageCropAspectRatio('1:1')
+//                ->imageResizeTargetWidth('300')
+//                ->imageResizeTargetHeight('300')
+//                ->required(false),
+        ];
+    }
+
+    /**
+     * Handle form submission.
+     */
+    public function submit()
+    {
+        $data = $this->form->getState();
+
+        $user = Auth::user();
+
+        // Update user attributes
+        $user->first_name  = $data['first_name'];
+        $user->last_name   = $data['last_name'];
+        $user->description = $data['description'];
+
+        // Handle password update if provided
+        if (!empty($data['password'])) {
+            $user->password = $data['password'];
+        }
+
+        // Handle profile picture upload if provided
+        if (isset($data['profile_picture'])) {
+            // Assuming you're storing the URL; adjust if storing differently
+            $user->profile_picture_url = $data['profile_picture'];
+            // Optionally, handle deletion of the old profile picture from storage
+        }
+
+        $user->save();
+
+        // Provide feedback to the user
+        Notification::make()
+            ->title('Profile Updated')
+            ->success()
+            ->body('Your profile has been updated successfully.')
+            ->send();
     }
 }
