@@ -103,8 +103,15 @@ class CreativeController extends Controller implements HasMiddleware
     {
         $featuredCreative = Cache::remember('featured-creative', Carbon::now()->addWeek(), function () {
             // Get a random creative each week
-            return Creative::inRandomOrder()->first();
+            return Creative::whereHas('photos')->inRandomOrder()->first();
         });
+
+        if (!$featuredCreative) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No creatives with photos found',
+            ], 404);
+        }
 
         $featuredCreative->load([
             'creative_categories',
@@ -112,6 +119,8 @@ class CreativeController extends Controller implements HasMiddleware
                 $query->limit(10); // Load only 5 photos
             }
         ]);
+
+
         return response()->json([
             'success' => true,
             'message' => 'Featured creative',
