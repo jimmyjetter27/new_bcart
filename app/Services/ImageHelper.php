@@ -100,7 +100,8 @@ class ImageHelper
     public function applyCloudinaryWatermark(string $publicId, int $width, int $height, string $watermarkPublicId = null)
     {
         // Define the default watermark if none is provided
-        $watermarkPublicId = $watermarkPublicId ?? 'Bcart:hppz3vr28ml0pzkr5uov';
+//        $watermarkPublicId = $watermarkPublicId ?? 'Bcart:hppz3vr28ml0pzkr5uov';
+        $watermarkPublicId = $watermarkPublicId ?? 'Bcart:bcart_logo_ko7mnl';
 
         // Replace '/' with ':' in the watermark public_id for the overlay
         $overlayPublicId = str_replace('/', ':', $watermarkPublicId);

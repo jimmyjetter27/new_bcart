@@ -86,6 +86,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
         return "{$firstName} {$lastName}";
     }
 
+
     public function isAdmin(): bool
     {
         return $this->type === Admin::class;
