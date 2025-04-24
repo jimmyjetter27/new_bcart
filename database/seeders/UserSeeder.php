@@ -51,17 +51,17 @@ class UserSeeder extends Seeder
 //            'remember_token' => Str::random(10),
 //        ]);
 
-        $user4 = User::create([
-            'first_name' => 'Laura',
-            'last_name' => 'Heller',
-            'username' => 'awoken monkey',
-            'email' => 'walton38@example.net',
-            'email_verified_at' => now(),
-            'type' => RegularUser::class,
-            'password' => Hash::make('password'),
-            'remember_token' => Str::random(10),
-        ]);
+//        $user4 = User::create([
+//            'first_name' => 'Laura',
+//            'last_name' => 'Heller',
+//            'username' => 'awoken monkey',
+//            'email' => 'walton38@example.net',
+//            'email_verified_at' => now(),
+//            'type' => RegularUser::class,
+//            'password' => Hash::make('password'),
+//            'remember_token' => Str::random(10),
+//        ]);
 
-        User::factory()->count(6)->create();
+//        User::factory()->count(6)->create();
     }
 }
